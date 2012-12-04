@@ -386,7 +386,7 @@ void View::applyPerspectiveCamera(float width, float height)
     float ratio = ((float) width) / height;
     Vector3 dir;
     Vector3 x;
-    dir = x.fromAngles(m_camera.theta, m_camera.phi);
+    dir = -x.fromAngles(m_camera.theta, m_camera.phi);
     Vector3 eye(m_camera.center - dir * m_camera.zoom);
 
     glMatrixMode(GL_PROJECTION);

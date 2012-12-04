@@ -108,9 +108,9 @@ struct CS123Rectangle {
    #undef ABS
 #endif
 
-       inline float min(float a, float b) { return a < b ? a : b; }
-       inline float max(float a, float b) { return a > b ? a : b; }
-/*
+       /*inline float min(float a, float b) { return a < b ? a : b; }
+       inline float max(float a, float b) { return a > b ? a : b; }*/
+
 #define MIN(x, y) ({          \
    typeof (x) x_ = (x);       \
    typeof (y) y_ = (y);       \
@@ -121,7 +121,7 @@ struct CS123Rectangle {
    typeof (x) _x_ = (x);      \
    typeof (y) _y_ = (y);      \
    ((_x_ > _y_) ? _x_ : _y_); \
-})*/
+})
 
 #define MIN3(x, y, z) ({      \
    typeof (x) x__ = (x);      \
