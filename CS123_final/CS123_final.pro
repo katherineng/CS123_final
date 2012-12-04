@@ -4,7 +4,8 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui \
+            opengl
 
 TARGET = CS123_final
 TEMPLATE = app
