@@ -9,7 +9,7 @@ void OrbitCamera::mouseMove(const Vector2 &delta)
 
     // Keep theta in [0, 2pi] and phi in [-pi/2, pi/2]
     theta -= floorf(theta / (2*M_PI)) * (2*M_PI);
-    phi = max(0.01 - M_PI / 2, min(M_PI / 2 - 0.01, phi));
+    phi = MAX(0.01 - M_PI / 2, MIN(M_PI / 2 - 0.01, phi));
 }
 
 void OrbitCamera::mouseWheel(float delta)
