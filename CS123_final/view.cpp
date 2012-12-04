@@ -33,7 +33,7 @@ View::View(QWidget *parent) : QGLWidget(parent)
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
 
     //bloom
-    m_camera.center = Vector3(0.f, 0.f, 0.f);
+    m_camera.center = Vector3(0., 0., 0.);
     m_camera.up = Vector3(0.f, 1.f, 0.f);
     m_camera.zoom = 3.5f;
     m_camera.theta = M_PI * 1.5f, m_camera.phi = 0.2f;
@@ -42,6 +42,7 @@ View::View(QWidget *parent) : QGLWidget(parent)
 
 View::~View()
 {
+    delete asteroid;
 }
 
 void View::initializeGL()
@@ -60,8 +61,8 @@ void View::initializeGL()
     // the fullscreen window and will not automatically receive mouse move
     // events. This occurs if there are two monitors and the mouse is on the
     // secondary monitor.
-  //  QCursor::setPos(mapToGlobal(QPoint(width() / 2, height() / 2)));
-
+    QCursor::setPos(mapToGlobal(QPoint(width() / 2, height() / 2)));
+m_increment = 0;
     // bloom lab
 
     // Set up OpenGL
@@ -83,6 +84,8 @@ void View::initializeGL()
 
     // Start the drawing timer
     m_timer.start(1000.0f / MAX_FPS);
+
+    asteroid = new Asteroid();
 }
 
 
@@ -168,7 +171,7 @@ GLuint View::loadSkybox()
 
     return id;
 }
-
+int i = 0;
 void View::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -199,37 +202,6 @@ void View::paintGL()
     glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_1"]->texture());
     renderTexturedQuad(width, height);
     glBindTexture(GL_TEXTURE_2D, 0);
-
-/*    // TODO: Step 1 - use the brightpass shader to render bright areas
-    // only to fbo_2
-
-    m_framebufferObjects["fbo_2"]->bind();
-    m_shaderPrograms["brightpass"]->bind();
-    glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_1"]->texture());
-    renderTexturedQuad(width, height);
-    m_shaderPrograms["brightpass"]->release();
-    glBindTexture(GL_TEXTURE_2D, 0);
-    m_framebufferObjects["fbo_2"]->release();
-
-    // TODO: Uncomment this section in step 2 of the lab
-    float scales[] = {4.f,8.f};
-    for (int i = 0; i < 2; ++i)
-    {
-        // Render the blurred brightpass filter result to fbo 1
-        renderBlur(width / scales[i], height / scales[i]);
-
-        // Bind the image from fbo to a texture
-        glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_1"]->texture());
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-        // Enable alpha blending and render the texture to the screen
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE, GL_ONE);
-        renderTexturedQuad(width * scales[i], height * scales[i]);
-        glDisable(GL_BLEND);
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }*/
 
     paintText();
     // TODO: Implement the demo rendering here
@@ -315,7 +287,7 @@ void View::initializeResources()
     cout << "--- Loading Resources ---" << endl;
 
    // m_dragon = ResourceLoader::loadObjModel("/course/cs123/bin/models/xyzrgb_dragon.obj");
-    cout << "Loaded dragon..." << endl;
+   // cout << "Loaded dragon..." << endl;
 
     m_skybox = loadSkybox();
     cout << "Loaded skybox..." << endl;
@@ -412,8 +384,10 @@ void View::applyOrthogonalCamera(float width, float height)
 void View::applyPerspectiveCamera(float width, float height)
 {
     float ratio = ((float) width) / height;
-    Vector3 dir(-Vector3::fromAngles(m_camera.theta, m_camera.phi));
-    Vector3 eye(m_camera.center/* - dir * m_camera.zoom*/);
+    Vector3 dir;
+    Vector3 x;
+    dir = x.fromAngles(m_camera.theta, m_camera.phi);
+    Vector3 eye(m_camera.center - dir * m_camera.zoom);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -430,8 +404,10 @@ void View::applyPerspectiveCamera(float width, float height)
 **/
 void View::renderScene()
 {
+    m_increment++;
     // Enable depth testing
-    glEnable(GL_DEPTH_TEST);
+   // glEnable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
     glClear(GL_DEPTH_BUFFER_BIT);
 
     // Enable cube maps and draw the skybox
@@ -439,61 +415,14 @@ void View::renderScene()
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMap);
     glCallList(m_skybox);
 
-    // Enable culling (back) faces for rendering the dragon
-//    glEnable(GL_CULL_FACE);
-
-//    // Render the dragon with the refraction shader bound
-//    glActiveTexture(GL_TEXTURE0);
-//    m_shaderPrograms["refract"]->bind();
-//    m_shaderPrograms["refract"]->setUniformValue("CubeMap", GL_TEXTURE0);
-//    glPushMatrix();
-//    glTranslatef(-1.25f, 0.f, 0.f);
-//    //glCallList(m_dragon.idx);
-//    glPopMatrix();
-//    m_shaderPrograms["refract"]->release();
-
-//    // Render the dragon with the reflection shader bound
-//    m_shaderPrograms["reflect"]->bind();
-//    m_shaderPrograms["reflect"]->setUniformValue("CubeMap", GL_TEXTURE0);
-//    glPushMatrix();
-//    glTranslatef(1.25f,0.f,0.f);
-//    //glCallList(m_dragon.idx);
-//    glPopMatrix();
-//    m_shaderPrograms["reflect"]->release();
     // Disable culling, depth testing and cube maps
     glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
     glBindTexture(GL_TEXTURE_CUBE_MAP,0);
     glDisable(GL_TEXTURE_CUBE_MAP);
-}
+    glEnable(GL_DEPTH_TEST);
+cout << m_fps << endl;
+    asteroid->draw(m_fps, m_increment);
 
-
-/**
-  Run a gaussian blur on the texture stored in fbo 2 and
-  put the result in fbo 1.  The blur should have a radius of 2.
-
-  @param width: the viewport width
-  @param height: the viewport height
-**/
-void View::renderBlur(int width, int height)
-{
-    int radius = 2;
-    int dim = radius * 2 + 1;
-    GLfloat kernel[dim * dim];
-    GLfloat offsets[dim * dim * 2];
-    createBlurKernel(radius, width, height, &kernel[0], &offsets[0]);
-
-    // TODO: Step 2 - Finish filling this in
-    m_framebufferObjects["fbo_1"]->bind();
-    m_shaderPrograms["blur"]->bind();
-    glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_2"]->texture());
-    m_shaderPrograms["blur"]->setUniformValueArray("offsets", offsets,dim*dim*2, 2);
-    m_shaderPrograms["blur"]->setUniformValueArray("kernel", kernel, dim*dim,1);
-    m_shaderPrograms["blur"]->setUniformValue("arraySize", dim*dim);
-    renderTexturedQuad(width, height);
-    m_shaderPrograms["blur"]->release();
-    glBindTexture(GL_TEXTURE_2D, 0);
-    m_framebufferObjects["fbo_1"]->release();
 }
 
 
@@ -535,42 +464,7 @@ void View::renderTexturedQuad(int width, int height) {
     glEnd();
 }
 
-/**
-  Creates a gaussian blur kernel with the specified radius.  The kernel values
-  and offsets are stored.
 
-  @param radius: The radius of the kernel to create.
-  @param width: The width of the image.
-  @param height: The height of the image.
-  @param kernel: The array to write the kernel values to.
-  @param offsets: The array to write the offset values to.
-**/
-void View::createBlurKernel(int radius, int width, int height,
-                                                    GLfloat* kernel, GLfloat* offsets)
-{
-    int size = radius * 2 + 1;
-    float sigma = radius / 3.0f;
-    float twoSigmaSigma = 2.0f * sigma * sigma;
-    float rootSigma = sqrt(twoSigmaSigma * M_PI);
-    float total = 0.0f;
-    float xOff = 1.0f / width, yOff = 1.0f / height;
-    int offsetIndex = 0;
-    for (int y = -radius, idx = 0; y <= radius; ++y)
-    {
-        for (int x = -radius; x <= radius; ++x,++idx)
-        {
-            float d = x * x + y * y;
-            kernel[idx] = exp(-d / twoSigmaSigma) / rootSigma;
-            total += kernel[idx];
-            offsets[offsetIndex++] = x * xOff;
-            offsets[offsetIndex++] = y * yOff;
-        }
-    }
-    for (int i = 0; i < size * size; ++i)
-    {
-        kernel[i] /= total;
-    }
-}
 
 /**
   Draws text for the FPS and screenshot prompt

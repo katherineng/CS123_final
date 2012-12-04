@@ -15,12 +15,17 @@ TEMPLATE = app
 SOURCES += main.cpp \
     mainwindow.cpp \
     view.cpp \
-    camera.cpp
+    camera.cpp \
+    asteroid.cpp \
+    CS123Matrix.inl \
+    CS123Vector.inl
 
 HEADERS += mainwindow.h \
     view.h \
     camera.h \
-    vector.h
+    asteroid.h \
+    CS123Algebra.h \
+    CS123Common.h
 
 FORMS += mainwindow.ui
 
