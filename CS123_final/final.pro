@@ -23,3 +23,9 @@ HEADERS += mainwindow.h \
     vector.h
 
 FORMS += mainwindow.ui
+
+OTHER_FILES += \
+    textures/posz.jpg \
+    textures/posx.jpg \
+    textures/negz.jpg \
+    textures/negx.jpg
