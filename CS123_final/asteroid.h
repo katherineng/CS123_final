@@ -11,6 +11,7 @@ public:
     GLUquadric *m_quadric;
     void draw(float fps, float elapsed);
     Vector4 m_translation;
+    Vector4 m_position;
 };
 
 #endif // ASTEROID_H
