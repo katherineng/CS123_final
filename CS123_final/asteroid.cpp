@@ -11,6 +11,14 @@ Asteroid::Asteroid()
 
     m_position = m_translation;
 
+    double xScale = (float) rand() / ((float) RAND_MAX) + 1.0;
+    double yScale = (float) rand() / ((float) RAND_MAX) + 1.0;
+    double zScale = (float) rand() / ((float) RAND_MAX) + 1.0;
+
+    m_scale = Matrix4x4(xScale, 0, 0, 0,
+                         0, yScale, 0, 0,
+                         0, 0, zScale, 0,
+                         0, 0, 0, 1);
 }
 
 Asteroid::~Asteroid(){
@@ -19,30 +27,19 @@ Asteroid::~Asteroid(){
 
 void Asteroid::draw(float fps, float elapsed){
 
-    glPushMatrix(); glEnable(GL_COLOR_MATERIAL);
-    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+    double matrix[16];
+    m_scale.getTranspose().fillArray(matrix);
 
-    // Set up global (ambient) lighting
-    GLfloat global_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
-
-    // Set up GL_LIGHT0 with a position and lighting properties
-    GLfloat ambientLight[] = {0.1f, 0.1f, 0.1f, 1.0f};
-    GLfloat diffuseLight[] = { 1.0f, 1.0f, 1.0, 1.0f };
-    GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-    GLfloat position[] = { 2.0f, 2.0f, 2.0f, 1.0f };
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
-    glLightfv(GL_LIGHT0, GL_POSITION, position);
-
+    glEnable(GL_LIGHTING);
+    glPushMatrix();
+    glMultMatrixd(matrix);
     m_position += m_translation;
     glPushAttrib( GL_CURRENT_BIT );
     glColor3f(0.5f, 0.0f, 1.0f);
     glRotatef(90+elapsed, m_position.x,m_position.y,m_position.z);
     glTranslatef(m_position.x * (elapsed/1000000), m_position.y*(elapsed/1000000), m_position.z*(elapsed/1000000));
-    gluSphere(m_quadric, 1.0f, 10,10);
+    gluSphere(m_quadric, .5f, 10,10);
     glPopAttrib();
     glPopMatrix();
+    glDisable(GL_LIGHTING);
 }

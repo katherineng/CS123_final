@@ -1,96 +1,82 @@
-/**<!-------------------------------------------------------------------->
-   @brief
-      Provides basic functionality for a constant-sized Vector.
-   <!-------------------------------------------------------------------->**/
+/*!
+   N-length CS123Vector called rows which has been defined as:
 
-#ifndef __CS123_VECTOR_INL__
-#define __CS123_VECTOR_INL__
+   CS123Vector<N, T> rows[M];
 
+**/
+
+#ifndef __CS123_MATRIX_INL__
+#define __CS123_MATRIX_INL__
+
+#include <CS123Common.h>
 #include <assert.h>
+#include <math.h>
+
 #include <iostream>
 using namespace std;
 
-
-// Extra operators where Vector is on right-hand side
-// --------------------------------------------------
-
-//! @returns the N-length vector resulting from multiplying a scalar by an N-length vector
 template<typename T>
-vec2<T> operator* (const T &scale, const vec2<T> &rhs) { return rhs * scale; }
+mat4<T> mat4<T>::identity() {
+    return mat4<T>(1,0,0,0,
+                   0,1,0,0,
+                   0,0,1,0,
+                   0,0,0,1);
+}
 
-//! @returns the N-length vector resulting from multiplying a scalar by an N-length vector
 template<typename T>
-vec3<T> operator* (const T &scale, const vec3<T> &rhs) { return rhs * scale; }
+mat4<T> mat4<T>::transpose(const mat4<T> &m) {
+    return mat4<T>(m.a, m.e, m.i, m.m,
+                   m.b, m.f, m.j, m.n,
+                   m.c, m.g, m.k, m.o,
+                   m.d, m.h, m.l, m.p);
+}
 
-//! @returns the N-length vector resulting from multiplying a scalar by an N-length vector
-template<typename T>
-vec4<T> operator* (const T &scale, const vec4<T> &rhs) { return rhs * scale; }
+// Extra operators where Matrix is on right-hand side
+// -----------------------------------------------------
 
-
-
-
-//! @returns (-1) * rhs, which is a negated version of the original right-hand side vector
-template<typename T>
-vec2<T> operator- (const vec2<T> &rhs) { return rhs * (-1); }
-
-//! @returns (-1) * rhs, which is a negated version of the original right-hand side vector
-template<typename T>
-vec3<T> operator- (const vec3<T> &rhs) { return rhs * (-1); }
-
-//! @returns (-1) * rhs, which is a negated version of the original right-hand side vector
-template<typename T>
-vec4<T> operator- (const vec4<T> &rhs) { return rhs * (-1); }
-
-
-// Prints a Vector to an output stream
+//! 1xM row vector * MxN matrix yields a 1xN vector
 template <typename T>
-inline std::ostream &operator<<(std::ostream &os, const vec2<T> &v) {
-    os << "[ " << v.x << " " << v.y << " ]";
+inline vec4<T> operator* (const vec4<T> &lhs, const mat4<T> &rhs) {
+   return vec4<T>(rhs.m*lhs.w+rhs.a*lhs.x+rhs.e*lhs.y+rhs.i*lhs.z,
+                  rhs.n*lhs.w+rhs.b*lhs.x+rhs.f*lhs.y+rhs.j*lhs.z,
+                  rhs.o*lhs.w+rhs.c*lhs.x+rhs.g*lhs.y+rhs.k*lhs.z,
+                  rhs.p*lhs.w+rhs.d*lhs.x+rhs.h*lhs.y+rhs.l*lhs.z);
+}
+
+//! @returns the MxN matrix resulting from multiplying a scalar by an MxN matrix
+template <typename T>
+inline mat4<T> operator* (const T &scale, const mat4<T> &rhs) {
+    return rhs * scale; }
+
+//! Prints a Matrix to an output stream
+template <typename T>
+inline std::ostream &operator<<(std::ostream &os, const mat4<T> &m) {
+    os << "[ ";
+    for(unsigned j = 0; j < 4; ++j) {
+        if(j) os << endl;
+        os << "[ ";
+        for(unsigned i = 0; i < 4; ++i)
+            os << m.data[i + j*4] << " ";
+        os << "]";
+    }
+    os << " ]";
     return os;
 }
-template <typename T>
-inline std::ostream &operator<<(std::ostream &os, const vec3<T> &v) {
-    os << "[ " << v.x << " " << v.y << " " << v.z << " ]";
-    return os;
+
+#if 0
+//! @returns the transpose of this matrix
+template <unsigned M, unsigned N, typename T>
+const mat4<T> mat4<T>::getTranspose() const {
+   assert(M == N);
+   T temp[M * N];
+
+   for(unsigned i = M; i--;)
+      for(unsigned j = N; j--;)
+         temp[i * N + j] = (*this)[j][i];
+
+   return CS123Matrix<M, N, T>(temp);
 }
-template <typename T>
-inline std::ostream &operator<<(std::ostream &os, const vec4<T> &v) {
-    os << "[ " << v.x << " " << v.y << " " << v.z << " " << v.w << " ]";
-    return os;
-}
+#endif
 
-
-template<typename T>
-vec3<T> vec3<T>::cross(const vec3<T> &rhs) const {
-    return vec3<T>(data[1] * rhs.data[2] - data[2] * rhs.data[1],
-                   data[2] * rhs.data[0] - data[0] * rhs.data[2],
-                   data[0] * rhs.data[1] - data[1] * rhs.data[0]);
-};
-
-template<typename T>
-vec3<T> vec3<T>::reflectVector(const vec3 &normal) const {
-
-    // @TODO: [RAY] Implement this function for reflection...
-
-
-}
-
-template<typename T>
-vec3<T> vec3<T>::refractVector(const vec3 &normal, T in, T out) const {
-
-    // @TODO: [RAY] You can implement refraction for extra credit.
-
-};
-
-template<typename T>
-inline T vec4<T>::normalize() {
-    T m = (T)1.0 / sqrt(x*x + y*y + z*z + w*w);
-#pragma vector align
-    for (unsigned i = 0; i < 4; ++i)
-        data[i] *= m;
-    return 1.0/m;
-};
-
-
-#endif // __CS123_VECTOR_INL__
+#endif // __CS123_MATRIX_INL__
 

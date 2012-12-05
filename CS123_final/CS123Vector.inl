@@ -89,7 +89,7 @@ vec3<T> vec3<T>::fromAngles(const float theta, const float phi) const {
 template<typename T>
 inline T vec4<T>::normalize() {
     T m = (T)1.0 / sqrt(x*x + y*y + z*z + w*w);
-#pragma vector align
+//#pragma vector align
     for (unsigned i = 0; i < 4; ++i)
         data[i] *= m;
     return 1.0/m;
