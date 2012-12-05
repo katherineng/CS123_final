@@ -18,25 +18,8 @@ Asteroid::~Asteroid(){
 }
 
 void Asteroid::draw(float fps, float elapsed){
-
-    glPushMatrix(); glEnable(GL_COLOR_MATERIAL);
-    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-
-    // Set up global (ambient) lighting
-    GLfloat global_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
-
-    // Set up GL_LIGHT0 with a position and lighting properties
-    GLfloat ambientLight[] = {0.1f, 0.1f, 0.1f, 1.0f};
-    GLfloat diffuseLight[] = { 1.0f, 1.0f, 1.0, 1.0f };
-    GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-    GLfloat position[] = { 2.0f, 2.0f, 2.0f, 1.0f };
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
-    glLightfv(GL_LIGHT0, GL_POSITION, position);
-
+    glEnable(GL_LIGHTING);
+    glPushMatrix();
     m_position += m_translation;
     glPushAttrib( GL_CURRENT_BIT );
     glColor3f(0.5f, 0.0f, 1.0f);
@@ -45,4 +28,5 @@ void Asteroid::draw(float fps, float elapsed){
     gluSphere(m_quadric, 1.0f, 10,10);
     glPopAttrib();
     glPopMatrix();
+    glDisable(GL_LIGHTING);
 }

@@ -74,9 +74,10 @@ m_increment = 0;
 
     glDisable(GL_DITHER);
 
-    glDisable(GL_LIGHTING);
-    glShadeModel(GL_FLAT);
-
+    //glDisable(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
+    //glShadeModel(GL_FLAT);
+    glShadeModel(GL_SMOOTH);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     // Load resources, including creating shader programs and framebuffer objects
@@ -404,10 +405,13 @@ void View::applyPerspectiveCamera(float width, float height)
 **/
 void View::renderScene()
 {
+
+
+
     m_increment++;
     // Enable depth testing
-   // glEnable(GL_DEPTH_TEST);
-    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
+   ///glDisable(GL_DEPTH_TEST);
     glClear(GL_DEPTH_BUFFER_BIT);
 
     // Enable cube maps and draw the skybox
@@ -420,6 +424,23 @@ void View::renderScene()
     glBindTexture(GL_TEXTURE_CUBE_MAP,0);
     glDisable(GL_TEXTURE_CUBE_MAP);
     glEnable(GL_DEPTH_TEST);
+
+    // Set up global (ambient) lighting
+    GLfloat global_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
+
+    // Set up GL_LIGHT0 with a position and lighting properties
+    GLfloat ambientLight[] = {0.1f, 0.1f, 0.1f, 1.0f};
+    GLfloat diffuseLight[] = { 1.0f, 1.0f, 1.0, 1.0f };
+    GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+    GLfloat position[] = { 2.0f, 2.0f, 2.0f, 1.0f };
+    glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
+    glLightfv(GL_LIGHT0, GL_POSITION, position);
+    glEnable(GL_LIGHT0);
+
     asteroid->draw(m_fps, m_increment);
 
 }
