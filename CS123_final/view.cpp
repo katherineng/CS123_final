@@ -420,7 +420,6 @@ void View::renderScene()
     glBindTexture(GL_TEXTURE_CUBE_MAP,0);
     glDisable(GL_TEXTURE_CUBE_MAP);
     glEnable(GL_DEPTH_TEST);
-cout << m_fps << endl;
     asteroid->draw(m_fps, m_increment);
 
 }
