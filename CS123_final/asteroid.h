@@ -12,6 +12,7 @@ public:
     void draw(float fps, float elapsed);
     Vector4 m_translation;
     Vector4 m_position;
+    Matrix4x4 m_scale;
 };
 
 #endif // ASTEROID_H

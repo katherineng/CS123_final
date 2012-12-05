@@ -406,12 +406,10 @@ void View::applyPerspectiveCamera(float width, float height)
 void View::renderScene()
 {
 
-
-
     m_increment++;
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);
-   ///glDisable(GL_DEPTH_TEST);
+    //glDisable(GL_DEPTH_TEST);
     glClear(GL_DEPTH_BUFFER_BIT);
 
     // Enable cube maps and draw the skybox
@@ -434,7 +432,7 @@ void View::renderScene()
     GLfloat ambientLight[] = {0.1f, 0.1f, 0.1f, 1.0f};
     GLfloat diffuseLight[] = { 1.0f, 1.0f, 1.0, 1.0f };
     GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-    GLfloat position[] = { 2.0f, 2.0f, 2.0f, 1.0f };
+    GLfloat position[] = { 2.0f, 3.0f, 2.0f, 1.0f };
     glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
     glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
