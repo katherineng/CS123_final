@@ -42,6 +42,12 @@ View::View(QWidget *parent) : QGLWidget(parent)
 
 View::~View()
 {
+    foreach (QGLShaderProgram *sp, m_shaderPrograms)
+        delete sp;
+    foreach (QGLFramebufferObject *fbo, m_framebufferObjects)
+        delete fbo;
+    glDeleteLists(m_skybox, 1);
+    const_cast<QGLContext *>(context())->deleteTexture(m_cubeMap);
     delete asteroid;
 }
 
@@ -74,8 +80,8 @@ m_increment = 0;
 
     glDisable(GL_DITHER);
 
-    //glDisable(GL_LIGHTING);
-    glEnable(GL_LIGHTING);
+    glDisable(GL_LIGHTING);
+    //glEnable(GL_LIGHTING);
     //glShadeModel(GL_FLAT);
     glShadeModel(GL_SMOOTH);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -89,6 +95,36 @@ m_increment = 0;
     asteroid = new Asteroid();
 }
 
+
+/**
+  Initialize all resources.
+  This includes models, textures, call lists, shader programs, and framebuffer objects.
+ **/
+void View::initializeResources()
+{
+    cout << "Using OpenGL Version " << glGetString(GL_VERSION) << endl << endl;
+    // Ideally we would now check to make sure all the OGL functions we use are supported
+    // by the video card.  But that's a pain to do so we're not going to.
+    cout << "--- Loading Resources ---" << endl;
+
+//     m_dragon = loadObjModel("/course/cs123/bin/models/xyzrgb_dragon.obj");
+//     cout << "Loaded dragon..." << endl;
+
+    m_skybox = loadSkybox();
+    cout << "Loaded skybox..." << endl;
+
+    loadCubeMap();
+    cout << "Loaded cube map..." << endl;
+
+    createShaderPrograms();
+    cout << "Loaded shader programs..." << endl;
+
+    createFramebufferObjects(width(), height());
+    cout << "Loaded framebuffer objects..." << endl;
+
+    cout << " --- Finish Loading Resources ---" << endl;
+
+}
 
 /**
   Loads the cube map into video memory.
@@ -175,9 +211,8 @@ GLuint View::loadSkybox()
 int i = 0;
 void View::paintGL()
 {
+    // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    //bloom lab
 
     // Update the fps
     int time = m_clock.elapsed();
@@ -276,36 +311,6 @@ void View::tick()
 }
 
 
-/**
-  Initialize all resources.
-  This includes models, textures, call lists, shader programs, and framebuffer objects.
- **/
-void View::initializeResources()
-{
-    cout << "Using OpenGL Version " << glGetString(GL_VERSION) << endl << endl;
-    // Ideally we would now check to make sure all the OGL functions we use are supported
-    // by the video card.  But that's a pain to do so we're not going to.
-    cout << "--- Loading Resources ---" << endl;
-
-   // m_dragon = ResourceLoader::loadObjModel("/course/cs123/bin/models/xyzrgb_dragon.obj");
-   // cout << "Loaded dragon..." << endl;
-
-    m_skybox = loadSkybox();
-    cout << "Loaded skybox..." << endl;
-
-    loadCubeMap();
-    cout << "Loaded cube map..." << endl;
-
-    createShaderPrograms();
-    cout << "Loaded shader programs..." << endl;
-
-    createFramebufferObjects(width(), height());
-    cout << "Loaded framebuffer objects..." << endl;
-
-    cout << " --- Finish Loading Resources ---" << endl;
-
-}
-
 
 /**
   Load a cube map for the skybox
@@ -322,17 +327,25 @@ void View::loadCubeMap()
     m_cubeMap = loadCubeMap(fileList);
 }
 
+/**
+    Creates a shader program from both vert and frag shaders
+  **/
+QGLShaderProgram *View::newShaderProgram(const QGLContext *context, QString vertShader, QString fragShader)
+{
+    QGLShaderProgram *program = new QGLShaderProgram(context);
+    program->addShaderFromSourceFile(QGLShader::Vertex, vertShader);
+    program->addShaderFromSourceFile(QGLShader::Fragment, fragShader);
+    !program->link();
+    return program;
+}
 
 /**
   Create shader programs.
  **/
 void View::createShaderPrograms()
 {
-   /* const QGLContext *ctx = context();
-    m_shaderPrograms["reflect"] = newShaderProgram(ctx, "shaders/reflect.vert", "shaders/reflect.frag");
-    m_shaderPrograms["refract"] = newShaderProgram(ctx, "shaders/refract.vert", "shaders/refract.frag");
-    m_shaderPrograms["brightpass"] = newFragShaderProgram(ctx, "shaders/brightpass.frag");
-    m_shaderPrograms["blur"] = newFragShaderProgram(ctx, "shaders/blur.frag");*/
+    const QGLContext *ctx = context();
+    m_shaderPrograms["displacement"] = newShaderProgram(ctx, "shaders/displacement.vert", "shaders/displacement.frag");
 }
 
 
@@ -344,7 +357,7 @@ void View::createShaderPrograms()
  **/
 void View::createFramebufferObjects(int width, int height)
 {
-    // Allocate the main framebuffer object for rendering the scene to
+    // Allocate the main framebuffer object for Scing the scene to
     // This needs a depth attachment
     m_framebufferObjects["fbo_0"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::Depth,
                                                              GL_TEXTURE_2D, GL_RGB16F_ARB);
@@ -409,7 +422,6 @@ void View::renderScene()
     m_increment++;
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);
-    //glDisable(GL_DEPTH_TEST);
     glClear(GL_DEPTH_BUFFER_BIT);
 
     // Enable cube maps and draw the skybox
@@ -417,12 +429,34 @@ void View::renderScene()
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMap);
     glCallList(m_skybox);
 
+
+
+    // Enable culling (back) faces for rendering the dragon
+    glEnable(GL_CULL_FACE);
+
+    // Render the dragon with the refraction shader bound
+   glActiveTexture(GL_TEXTURE0);
+    m_shaderPrograms["displacement"]->bind();
+    m_shaderPrograms["displacement"]->setUniformValue("CubeMap", GL_TEXTURE0);
+    glPushMatrix();
+    renderAsteroids();
+    glPopMatrix();
+    m_shaderPrograms["displacement"]->release();
+
+
+
     // Disable culling, depth testing and cube maps
     glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
     glBindTexture(GL_TEXTURE_CUBE_MAP,0);
     glDisable(GL_TEXTURE_CUBE_MAP);
-    glEnable(GL_DEPTH_TEST);
 
+
+
+
+}
+
+void View::renderAsteroids(){
     // Set up global (ambient) lighting
     GLfloat global_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
@@ -440,7 +474,6 @@ void View::renderScene()
     glEnable(GL_LIGHT0);
 
     asteroid->draw(m_fps, m_increment);
-
 }
 
 

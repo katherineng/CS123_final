@@ -1,4 +1,4 @@
-# 
+#
 # CS123 Final Project Starter Code
 # Adapted from starter code graciously provided by CS195-U: 3D Game Engines
 #
@@ -33,4 +33,7 @@ OTHER_FILES += \
     textures/posz.jpg \
     textures/posx.jpg \
     textures/negz.jpg \
-    textures/negx.jpg
+    textures/negx.jpg \
+    textures/asteroid.jpg \
+    shaders/displacement.vert \
+    shaders/displacement.frag

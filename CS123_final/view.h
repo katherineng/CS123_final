@@ -16,6 +16,7 @@
 class QGLShaderProgram;
 class QGLFramebufferObject;
 
+
 class View : public QGLWidget
 {
     Q_OBJECT
@@ -41,6 +42,7 @@ public:
     void applyPerspectiveCamera(float width, float height);
     void renderTexturedQuad(int width, int height);
     void renderScene();
+    void renderAsteroids();
     void paintText();
 
 private:
@@ -73,7 +75,7 @@ private:
     GLuint m_skybox; // skybox call list ID
     GLuint m_cubeMap; // cubeMap texture ID
     QFont m_font; // font for rendering text
-
+    QGLShaderProgram *newShaderProgram(const QGLContext *context, QString vertShader, QString fragShader);
 private slots:
     void tick();
 };
