@@ -33,6 +33,7 @@ public:
     void setDisplacedNormals();
     Vector4 calculateDisplacedNormal(int i);
     void calculateVertices();
+    Vector4 getPosition();
 
 };
 

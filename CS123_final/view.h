@@ -45,6 +45,9 @@ public:
     void renderAsteroids();
     void paintText();
 
+protected:
+    vector<Asteroid*> m_asteroids;
+
 private:
     QTime m_time;
     QTimer m_timer;

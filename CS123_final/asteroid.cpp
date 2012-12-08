@@ -43,6 +43,11 @@ Asteroid::~Asteroid(){
     delete[] m_displacement;
 }
 
+
+Vector4 Asteroid::getPosition() {
+        return m_position;
+}
+
 void Asteroid::setDisplacedNormals(){
     for (int i = 0; i < m_numVertices; i++){
         m_displacedNormals[i] = calculateDisplacedNormal(i);
