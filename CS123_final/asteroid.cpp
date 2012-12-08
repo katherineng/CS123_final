@@ -44,6 +44,10 @@ Asteroid::~Asteroid(){
 }
 
 
+void Asteroid::setRadius(float r) {
+    m_radius = r;
+}
+
 Vector4 Asteroid::getPosition() {
         return m_position;
 }

@@ -431,9 +431,12 @@ void View::renderScene()
     int i, j, num_asteroids = m_asteroids.size();
     for (i = 0; i < num_asteroids; i++) {
         Vector4 pos1 = m_asteroids[i]->getPosition();
+        float rad = m_asteroids[i]->getRadius();
         for (j = i + 1; j < num_asteroids; j++){
             Vector4 pos2 = m_asteroids[j]->getPosition();
-            if ((pos1.x == pos2.x) && (pos1.y == pos2.y) && (pos1.z == pos2.z)) {
+            float collision_rad = rad + m_asteroids[j]->getRadius();
+            float distance = sqrt(pow(pos2.x - pos1.x, 2) + pow(pos2.y - pos1.y, 2) + pow(pos2.z - pos1.z, 2));
+            if (distance <= collision_rad) {
                 m_asteroids.erase(m_asteroids.begin() + j);
                 m_asteroids.erase(m_asteroids.begin() + i);
                 num_asteroids -= 2;
