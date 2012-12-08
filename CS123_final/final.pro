@@ -35,5 +35,6 @@ OTHER_FILES += \
     textures/negz.jpg \
     textures/negx.jpg \
     textures/asteroid.jpg \
+    textures/permtexture.png \
     shaders/displacement.vert \
     shaders/displacement.frag
