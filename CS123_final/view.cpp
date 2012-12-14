@@ -32,7 +32,9 @@ View::View(QWidget *parent) : QGLWidget(parent)
 
     // The game loop is implemented using a timer
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
-
+    foreach (Asteroid * a, m_asteroids) {
+        a->draw(m_fps, m_increment);
+    }
     //bloom
     m_camera.center = Vector3(0., 0., 0.);
     m_camera.up = Vector3(0.f, 1.f, 0.f);
@@ -41,11 +43,13 @@ View::View(QWidget *parent) : QGLWidget(parent)
     m_camera.fovy = 60.f;
 
     int i;
-    int init_asteroids = rand() % 10;
+   /* int init_asteroids = rand() % 10;
     for (i = 0; i < init_asteroids; i++) {
         Asteroid *a = new Asteroid();
         m_asteroids.push_back(a);
-    }
+    }*/
+
+    asteroid = new Asteroid();
 }
 
 View::~View()
@@ -441,7 +445,7 @@ void View::applyPerspectiveCamera(float width, float height)
 **/
 void View::renderScene()
 {
-    int i, j, num_asteroids = m_asteroids.size();
+   /* int i, j, num_asteroids = m_asteroids.size();
     for (i = 0; i < num_asteroids; i++) {
         Vector4 pos1 = m_asteroids[i]->getPosition();
         float rad = m_asteroids[i]->getRadius();
@@ -457,7 +461,7 @@ void View::renderScene()
                 j--;
             }
         }
-    }
+    }*/
 
 
     m_increment++;
@@ -513,10 +517,8 @@ void View::renderAsteroids(){
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
     glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
     glLightfv(GL_LIGHT0, GL_POSITION, position);*/
+    asteroid->draw(m_fps, m_increment);
 
-    foreach (Asteroid * a, m_asteroids) {
-        a->draw(m_fps, m_increment);
-    }
 }
 
 
