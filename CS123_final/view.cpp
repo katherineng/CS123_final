@@ -9,6 +9,7 @@
 #include <QTime>
 #include <QTimer>
 #include <QWheelEvent>
+#include <vector>
 using std::cout;
 using std::endl;
 
@@ -38,6 +39,13 @@ View::View(QWidget *parent) : QGLWidget(parent)
     m_camera.zoom = 3.5f;
     m_camera.theta = M_PI * 1.5f, m_camera.phi = 0.2f;
     m_camera.fovy = 60.f;
+
+    int i;
+    int init_asteroids = rand() % 10;
+    for (i = 0; i < init_asteroids; i++) {
+        Asteroid *a = new Asteroid();
+        m_asteroids.push_back(a);
+    }
 }
 
 View::~View()
@@ -48,7 +56,10 @@ View::~View()
         delete fbo;
     glDeleteLists(m_skybox, 1);
     const_cast<QGLContext *>(context())->deleteTexture(m_cubeMap);
-    delete asteroid;
+
+    foreach (Asteroid *a, m_asteroids) {
+        delete a;
+    }
 }
 
 void View::initializeGL()
@@ -92,7 +103,6 @@ m_increment = 0;
     // Start the drawing timer
     m_timer.start(1000.0f / MAX_FPS);
 
-    asteroid = new Asteroid();
 }
 
 
@@ -431,6 +441,24 @@ void View::applyPerspectiveCamera(float width, float height)
 **/
 void View::renderScene()
 {
+    int i, j, num_asteroids = m_asteroids.size();
+    for (i = 0; i < num_asteroids; i++) {
+        Vector4 pos1 = m_asteroids[i]->getPosition();
+        float rad = m_asteroids[i]->getRadius();
+        for (j = i + 1; j < num_asteroids; j++){
+            Vector4 pos2 = m_asteroids[j]->getPosition();
+            float collision_rad = rad + m_asteroids[j]->getRadius();
+            float distance = sqrt(pow(pos2.x - pos1.x, 2) + pow(pos2.y - pos1.y, 2) + pow(pos2.z - pos1.z, 2));
+            if (distance <= collision_rad) {
+                m_asteroids.erase(m_asteroids.begin() + j);
+                m_asteroids.erase(m_asteroids.begin() + i);
+                num_asteroids -= 2;
+                i--;
+                j--;
+            }
+        }
+    }
+
 
     m_increment++;
     // Enable depth testing
@@ -486,9 +514,10 @@ void View::renderAsteroids(){
     glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
     glLightfv(GL_LIGHT0, GL_POSITION, position);*/
 
-    asteroid->draw(m_fps, m_increment);
+    foreach (Asteroid * a, m_asteroids) {
+        a->draw(m_fps, m_increment);
+    }
 }
-
 
 
 /**
