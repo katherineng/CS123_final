@@ -23,9 +23,10 @@ Asteroid::Asteroid()
                          0, 0, 0, 1);
 
 
-    m_rows = 15;
-    m_cols = 15;
+    m_rows = 60;
+    m_cols = 60;
     m_radius = .5;
+    m_seed = rand();
     m_numVertices = (m_rows-1)*m_cols + 2;
     m_vertices = new Vector4[m_numVertices];
     m_displacement = new double[m_numVertices];
@@ -51,7 +52,7 @@ void Asteroid::setDisplacedNormals(){
 
 Vector4 Asteroid::calculateDisplacedNormal(int i){
     if (i == 0){ // at the tip
-    } else if (i == m_numVertices - 1) { // at the bottom
+    } else if (i == m_numVertices) { // at the bottom
 
     } else if ((i-1) % m_rows == 0){ // at left border
 
@@ -75,7 +76,6 @@ void Asteroid::calculateVertices(){
     double longi = 0;
     int col, row;
     double x,y,z;
-
     m_vertices[0] = Vector4(0,.5,0,1);
     for(row = 0; row < m_rows - 1; row++, lat += latIncr){
         longi = 0;
@@ -250,21 +250,17 @@ void Asteroid::draw(float fps, float elapsed){
     double matrix[16];
     m_scale.getTranspose().fillArray(matrix);
 
-    glEnable(GL_LIGHTING);
-    glPushMatrix();
-    glMultMatrixd(matrix);
-    m_position += m_translation;
-    glPushAttrib( GL_CURRENT_BIT );
-    glColor3f(0.5f, 0.0f, 1.0f);
-    glRotatef(90+elapsed, m_position.x,m_position.y,m_position.z);
-    glTranslatef(m_position.x * (elapsed/1000000), m_position.y*(elapsed/1000000), m_position.z*(elapsed/1000000));
+  //  glEnable(GL_LIGHTING);
+//    glMultMatrixd(matrix);
+   // m_position += m_translation;
+   // glRotatef(90+elapsed, m_position.x,m_position.y,m_position.z);
+  //  glTranslatef(m_position.x * (elapsed/1000000), m_position.y*(elapsed/1000000), m_position.z*(elapsed/1000000));
 
-    drawTop();
-    drawBody();
-    drawBottom();
+  //  drawTop();
+   // drawBody();
+    //drawBottom();
 
-    //gluSphere(m_quadric, .5f, 10,10);
-    glPopAttrib();
-    glPopMatrix();
-    glDisable(GL_LIGHTING);
+    gluSphere(m_quadric, .5f, 30,30);
+
+  //  glDisable(GL_LIGHTING);
 }

@@ -113,6 +113,19 @@ void View::initializeResources()
     m_skybox = loadSkybox();
     cout << "Loaded skybox..." << endl;
 
+    QFile file("textures/asteroid.jpg");
+    QImage image, texture;
+    image.load(file.fileName());
+    texture = QGLWidget::convertToGLFormat(image);
+    //Put your code here
+    glGenTextures(1, &m_texture);
+    glBindTexture(GL_TEXTURE_2D, GL_TEXTURE0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width(), texture.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.bits());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    gluBuild2DMipmaps(GL_TEXTURE_2D, 3, texture.width(), texture.height(), GL_RGB, GL_UNSIGNED_BYTE, texture.bits());
+    glBindTexture(GL_TEXTURE_2D, 0);
+
     loadCubeMap();
     cout << "Loaded cube map..." << endl;
 
@@ -424,41 +437,42 @@ void View::renderScene()
     glEnable(GL_DEPTH_TEST);
     glClear(GL_DEPTH_BUFFER_BIT);
 
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMap);
     // Enable cube maps and draw the skybox
     glEnable(GL_TEXTURE_CUBE_MAP);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMap);
     glCallList(m_skybox);
 
 
+    glBindTexture(GL_TEXTURE_CUBE_MAP,0);
+    glDisable(GL_TEXTURE_CUBE_MAP);
 
     // Enable culling (back) faces for rendering the dragon
     glEnable(GL_CULL_FACE);
 
     // Render the dragon with the refraction shader bound
-   glActiveTexture(GL_TEXTURE0);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_texture);
     m_shaderPrograms["displacement"]->bind();
-    m_shaderPrograms["displacement"]->setUniformValue("CubeMap", GL_TEXTURE0);
+    m_shaderPrograms["displacement"]->setUniformValue("seed", (GLfloat)asteroid->m_seed);
+
+    m_shaderPrograms["displacement"]->setUniformValue("textureMap",0);
     glPushMatrix();
     renderAsteroids();
     glPopMatrix();
     m_shaderPrograms["displacement"]->release();
-
-
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     // Disable culling, depth testing and cube maps
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
-    glBindTexture(GL_TEXTURE_CUBE_MAP,0);
-    glDisable(GL_TEXTURE_CUBE_MAP);
-
-
-
 
 }
 
 void View::renderAsteroids(){
     // Set up global (ambient) lighting
-    GLfloat global_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+   /* GLfloat global_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
     glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
 
@@ -470,8 +484,7 @@ void View::renderAsteroids(){
     glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
     glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
-    glLightfv(GL_LIGHT0, GL_POSITION, position);
-    glEnable(GL_LIGHT0);
+    glLightfv(GL_LIGHT0, GL_POSITION, position);*/
 
     asteroid->draw(m_fps, m_increment);
 }
