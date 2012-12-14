@@ -1,216 +1,90 @@
-/*
-        3D Perlin-Noise in the vertex shader, based originally on
-        vBomb.fx HLSL vertex noise shader, from the NVIDIA Shader Library.
-        http://developer.download.nvidia.com/shaderlibrary/webpages/shader_library.html#vbomb
+#extension GL_EXT_gpu_shader4: enable
+#extension GL_ARB_gpu_shader_fp64: enable
 
-        Original Perlin function substituted for Stefan Gustavson's
-        texture-lookup-based Perlin implementation.
+varying float displacement;
+uniform sampler2D textureMap;
 
-        Quartz Composer setup
-        toneburst 2009
-        http://machinesdontcare.wordpress.com
-*/
-
-////////////////////////
-//  3D Perlin Noise   //
-////////////////////////
-
-/*
-        3D Perlin-Noise from example by Stefan Gustavson, found at
-        http://staffwww.itn.liu.se/~stegu/simplexnoise/
-*/
-
-uniform sampler2D permTexture;			// Permutation texture
-const float permTexUnit = 1.0/256.0;		// Perm texture texel-size
-const float permTexUnitHalf = 0.5/256.0;	// Half perm texture texel-size
-
-float fade(in float t) {
-        return t*t*t*(t*(t*6.0-15.0)+10.0);
+int p[] = { 151,160,137,91,90,15,
+   131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
+   190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
+   88,237,149,56,87,174,20,125,136,171,168, 68,175,74,165,71,134,139,48,27,166,
+   77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,
+   102,143,54, 65,25,63,161, 1,216,80,73,209,76,132,187,208, 89,18,169,200,196,
+   135,130,116,188,159,86,164,100,109,198,173,186, 3,64,52,217,226,250,124,123,
+   5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,
+   223,183,170,213,119,248,152, 2,44,154,163, 70,221,153,101,155,167, 43,172,9,
+   129,22,39,253, 19,98,108,110,79,113,224,232,178,185, 112,104,218,246,97,228,
+   251,34,242,193,238,210,144,12,191,179,162,241, 81,51,145,235,249,14,239,107,
+   49,192,214, 31,181,199,106,157,184, 84,204,176,115,121,50,45,127, 4,150,254,
+   138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
+   };
+   
+float fade(float t) {
+    return t * t * t * (t * (t * 6 - 15) + 10); 
 }
 
-float pnoise3D(in vec3 p)
-{
-        vec3 pi = permTexUnit*floor(p)+permTexUnitHalf; // Integer part, scaled so +1 moves permTexUnit texel
-        // and offset 1/2 texel to sample texel centers
-        vec3 pf = fract(p);     // Fractional part for interpolation
-
-        // Noise contributions from (x=0, y=0), z=0 and z=1
-        float perm00 = texture2D(permTexture, pi.xy).a ;
-        vec3  grad000 = texture2D(permTexture, vec2(perm00, pi.z)).rgb * 4.0 - 1.0;
-        float n000 = dot(grad000, pf);
-        vec3  grad001 = texture2D(permTexture, vec2(perm00, pi.z + permTexUnit)).rgb * 4.0 - 1.0;
-        float n001 = dot(grad001, pf - vec3(0.0, 0.0, 1.0));
-
-        // Noise contributions from (x=0, y=1), z=0 and z=1
-        float perm01 = texture2D(permTexture, pi.xy + vec2(0.0, permTexUnit)).a ;
-        vec3  grad010 = texture2D(permTexture, vec2(perm01, pi.z)).rgb * 4.0 - 1.0;
-        float n010 = dot(grad010, pf - vec3(0.0, 1.0, 0.0));
-        vec3  grad011 = texture2D(permTexture, vec2(perm01, pi.z + permTexUnit)).rgb * 4.0 - 1.0;
-        float n011 = dot(grad011, pf - vec3(0.0, 1.0, 1.0));
-
-        // Noise contributions from (x=1, y=0), z=0 and z=1
-        float perm10 = texture2D(permTexture, pi.xy + vec2(permTexUnit, 0.0)).a ;
-        vec3  grad100 = texture2D(permTexture, vec2(perm10, pi.z)).rgb * 4.0 - 1.0;
-        float n100 = dot(grad100, pf - vec3(1.0, 0.0, 0.0));
-        vec3  grad101 = texture2D(permTexture, vec2(perm10, pi.z + permTexUnit)).rgb * 4.0 - 1.0;
-        float n101 = dot(grad101, pf - vec3(1.0, 0.0, 1.0));
-
-        // Noise contributions from (x=1, y=1), z=0 and z=1
-        float perm11 = texture2D(permTexture, pi.xy + vec2(permTexUnit, permTexUnit)).a ;
-        vec3  grad110 = texture2D(permTexture, vec2(perm11, pi.z)).rgb * 4.0 - 1.0;
-        float n110 = dot(grad110, pf - vec3(1.0, 1.0, 0.0));
-        vec3  grad111 = texture2D(permTexture, vec2(perm11, pi.z + permTexUnit)).rgb * 4.0 - 1.0;
-        float n111 = dot(grad111, pf - vec3(1.0, 1.0, 1.0));
-
-        // Blend contributions along x
-        vec4 n_x = mix(vec4(n000, n001, n010, n011),
-                        vec4(n100, n101, n110, n111), fade(pf.x));
-
-        // Blend contributions along y
-        vec2 n_xy = mix(n_x.xy, n_x.zw, fade(pf.y));
-
-        // Blend contributions along z
-        float n_xyz = mix(n_xy.x, n_xy.y, fade(pf.z));
-
-        // We're done, return the final noise value.
-        return n_xyz;
+float lerp(float t, float a, float b) { 
+    return a + t * (b - a); 
 }
 
-/////////////////////
-// Sphere Function //
-/////////////////////
-
-const float PI = 3.14159265;
-const float TWOPI = 6.28318531;
-uniform float BaseRadius;
-
-vec4 sphere(in float u, in float v) {
-        u *= PI;
-        v *= TWOPI;
-        vec4 pSphere;
-        pSphere.x = BaseRadius * cos(v) * sin(u);
-        pSphere.y = BaseRadius * sin(v) * sin(u);
-        pSphere.z = BaseRadius * cos(u);
-        pSphere.w = 1.0;
-        return pSphere;
+float grad(int hash, float x, float y, float z) {
+    int h = hash & 15;                      // CONVERT LO 4 BITS OF HASH CODE
+    float u = h<8 ? x : y;                // INTO 12 GRADIENT DIRECTIONS.
+    float v = h<4 ? y : h==12||h==14 ? x : z;
+    return ((h&1) == 0 ? u : -u) + ((h&2) == 0 ? v : -v);
 }
 
-///////////////////////////
-// Apply 3D Perlin Noise //
-///////////////////////////
-
-uniform vec3 NoiseScale;	// Noise scale, 0.01 > 8
-uniform float Sharpness;	// Displacement 'sharpness', 0.1 > 5
-uniform float Displacement;	// Displcement amount, 0 > 2
-uniform float Speed;		// Displacement rate, 0.01 > 1
-uniform float Timer;		// Feed incrementing value, infinite
-
-vec4 perlinSphere(in float u, in float v) {
-        vec4 sPoint = sphere(u, v);
-        // The rest of this function is mainly from vBomb shader from NVIDIA Shader Library
-        vec4 noisePos = vec4(NoiseScale.xyz,1.0) * (sPoint + (Speed * Timer));
-        float noise = (pnoise3D(noisePos.xyz) + 1.0) * 0.5;;
-        float ni = pow(abs(noise),Sharpness) - 0.25;
-        vec4 nn = vec4(normalize(sPoint.xyz),0.0);
-        return (sPoint - (nn * (ni-0.5) * Displacement));
+float perlinNoise(float x, float y, float z){
+    float total;
+    float width = .3;
+    int grid = 2;
+    float widthGrid;
+    
+    for (int i = 0; i < 5; i++, grid *= 2){
+	widthGrid = width/grid;
+	
+	int X = ((int) floor(x/widthGrid)) & 255;
+	int Y = ((int) floor(y/widthGrid)) & 255;
+	int Z =  ((int) floor(z/widthGrid)) & 255;
+	 
+	x = x/widthGrid - ((int) floor(x/widthGrid));//mod(x, currGrid);//int(x/currGrid);
+	y = y/widthGrid - ((int) floor(y/widthGrid));//mod(y, currGrid);//int(y/currGrid);
+	z = z/widthGrid - ((int) floor(z/widthGrid));//mod(z, currGrid);//int(z/currGrid);
+	
+	float u = fade(x);
+	float v = fade(y);
+	float w = fade(z);
+	
+	int A = p[X] + Y;
+	int AA = p[A] + Z;
+	
+	int AB = p[A+1] +Z;
+	int B = p[X + 1] + Y;
+	int BA = p[B] + Z;
+	int BB = p[B + 1] + Z;
+	
+	total += (lerp(w, lerp(v, lerp(u, grad(p[AA  ], x  , y  , z   ),  
+                                     grad(p[BA  ], x-1, y  , z   )), 
+                             lerp(u, grad(p[AB  ], x  , y-1, z   ),  
+                                     grad(p[BB  ], x-1, y-1, z   ))),
+                     lerp(v, lerp(u, grad(p[AA+1], x  , y  , z-1 ),  
+                                     grad(p[BA+1], x-1, y  , z-1 )),
+                             lerp(u, grad(p[AB+1], x  , y-1, z-1 ),
+                                     grad(p[BB+1], x-1, y-1, z-1 ))))) * (1.0/(i+1));
+    }
+    return total;
 }
 
-////////////////////////////////
-// Calculate Position, Normal //
-////////////////////////////////
-
-const float grid = 0.01;	// Grid offset for normal-estimation
-varying vec3 norm;			// Normal
-
-vec4 posNorm(in float u, in float v) {
-        // Vertex position
-        vec4 vPosition = perlinSphere(u, v);
-        // Estimate normal by 'neighbour' technique
-        // with thanks to tonfilm
-        vec3 tangent = (perlinSphere(u + grid, v) - vPosition).xyz;
-        vec3 bitangent = (perlinSphere(u, v + grid) - vPosition).xyz;
-        norm = gl_NormalMatrix * normalize(cross(tangent, bitangent));
-        // Return vertex position
-        return vPosition;
+void main(){
+gl_TexCoord[0] = gl_MultiTexCoord0;
+    displacement = mod(abs(perlinNoise(gl_Vertex.x,gl_Vertex.y, gl_Vertex.z)), 1.0);////min(max(0.0,perlinNoise(gl_Vertex.x,gl_Vertex.y, gl_Vertex.z)), 1.0);
+    vec4 vertexPrime = gl_Vertex+displacement*.3*vec4(gl_Normal,0);   
+    gl_Position = gl_ModelViewProjectionMatrix * vertexPrime;    
+    //gl_Position = ftransform();
+ /*   
+    displacement = gl_TexCoord[0].x ;
+    vec4 texture = texture2D(textureMap, gl_TexCoord[0].st);
+    float df = .3*texture.x + .59*texture.y + .11*texture.z;
+    vec4 vertexPrime = gl_Vertex + df*7*vec4(gl_Normal,0);
+    gl_Position = gl_ModelViewProjectionMatrix*vertexPrime;*/
 }
-
-//////////////////////////
-// Phong Directional VS //
-//////////////////////////
-
-// -- Lighting varyings (to Fragment Shader)
-varying vec3 lightDir0, halfVector0;
-varying vec4 diffuse0, ambient;
-
-void phongDir_VS() {
-        // Extract values from gl light parameters
-        // and set varyings for Fragment Shader
-        lightDir0 = normalize(vec3(gl_LightSource[0].position));
-        halfVector0 = normalize(gl_LightSource[0].halfVector.xyz);
-        diffuse0 = gl_FrontMaterial.diffuse * gl_LightSource[0].diffuse;
-        ambient =  gl_FrontMaterial.ambient * gl_LightSource[0].ambient;
-        ambient += gl_LightModel.ambient * gl_FrontMaterial.ambient;
-}
-
-///////////////
-// Main Loop //
-///////////////
-
-uniform vec2 PreScale, PreTranslate;	// Mesh pre-transform
-
-void main()
-{
-        vec2 uv = gl_Vertex.xy;
-        // Offset XY mesh coords to 0 > 1 range
-        uv += 0.5;
-
-        // Pre-scale and transform mesh
-        uv *= PreScale;
-        uv += PreTranslate;
-
-        // Calculate new vertex position and normal
-        vec4 spherePos = posNorm(uv[0], uv[1]);
-
-        // Calculate lighting varyings to be passed to fragment shader
-        phongDir_VS();
-
-        // Transform new vertex position by modelview and projection matrices
-        gl_Position = gl_ModelViewProjectionMatrix * spherePos;
-
-        // Forward current texture coordinates after applying texture matrix
-        gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;
-}
-
-
-
-
-/*varying vec3 normal, lightDir, r;
-const vec3 L = vec3(0.,0.,1.);
-
-
-double fade(double x) {
-    return x * x * x * (x * (x * 6 - 15) + 10);
-}
-
-int fastfloor(double x) {
-    int xi = (int) x;
-    return x < xi ? xi - 1 : xi;
-}
-
-double lerp(double x, double y, double z) {
-    return y + x * (z - y);
-}
-
-double noise(double x, y, z) {
-
-
-void main()
-{
-        gl_Position = ftransform();
-        vec3 vVertex = vec3(gl_ModelViewMatrix * gl_Vertex);
-        lightDir = vec3(L - vVertex);
-        vec4 eyeVec = gl_ProjectionMatrixInverse*vec4(0,0,-1,0);
-        normal = normalize( gl_NormalMatrix * gl_Normal );
-        vec3 I = normalize(vVertex - eyeVec.xyz); // Eye to vertex
-  r = reflect(I,normal);
-} */

@@ -24,6 +24,7 @@ public:
     int m_rows;
     int m_cols;
     double m_radius;
+    double m_seed;
 
     void draw(float fps, float elapsed);
     void drawTop();
