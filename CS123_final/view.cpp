@@ -203,7 +203,7 @@ GLuint View::loadSkybox()
 
     // Be glad we wrote this for you...ugh.
     glBegin(GL_QUADS);
-    float extent = 100.f;
+    float extent = 10000.f;
     glTexCoord3f( 1.0f, -1.0f, -1.0f); glVertex3f( extent, -extent, -extent);
     glTexCoord3f(-1.0f, -1.0f, -1.0f); glVertex3f(-extent, -extent, -extent);
     glTexCoord3f(-1.0f,  1.0f, -1.0f); glVertex3f(-extent,  extent, -extent);
@@ -430,7 +430,7 @@ void View::applyPerspectiveCamera(float width, float height)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(m_camera.fovy, ratio, 0.1f, 1000.f);
+    gluPerspective(m_camera.fovy, ratio, 0.1f, 21000.f);
     gluLookAt(eye.x, eye.y, eye.z, eye.x + dir.x, eye.y + dir.y, eye.z + dir.z,
               m_camera.up.x, m_camera.up.y, m_camera.up.z);
     glMatrixMode(GL_MODELVIEW);
