@@ -437,12 +437,12 @@ void View::renderScene()
     glEnable(GL_DEPTH_TEST);
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    glActiveTexture(GL_TEXTURE1);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMap);
+
     // Enable cube maps and draw the skybox
     glEnable(GL_TEXTURE_CUBE_MAP);
     glCallList(m_skybox);
-
 
     glBindTexture(GL_TEXTURE_CUBE_MAP,0);
     glDisable(GL_TEXTURE_CUBE_MAP);
@@ -452,12 +452,12 @@ void View::renderScene()
 
     // Render the dragon with the refraction shader bound
 
-    glActiveTexture(GL_TEXTURE0);
+
     glBindTexture(GL_TEXTURE_2D, m_texture);
     m_shaderPrograms["displacement"]->bind();
     m_shaderPrograms["displacement"]->setUniformValue("seed", (GLfloat)asteroid->m_seed);
 
-    m_shaderPrograms["displacement"]->setUniformValue("textureMap",0);
+    m_shaderPrograms["displacement"]->setUniformValue("textureMap", m_texture);
     glPushMatrix();
     renderAsteroids();
     glPopMatrix();
