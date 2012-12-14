@@ -32,9 +32,7 @@ View::View(QWidget *parent) : QGLWidget(parent)
 
     // The game loop is implemented using a timer
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
-    foreach (Asteroid * a, m_asteroids) {
-        a->draw(m_fps, m_increment);
-    }
+
     //bloom
     m_camera.center = Vector3(0., 0., 0.);
     m_camera.up = Vector3(0.f, 1.f, 0.f);
@@ -43,13 +41,13 @@ View::View(QWidget *parent) : QGLWidget(parent)
     m_camera.fovy = 60.f;
 
     int i;
-   /* int init_asteroids = rand() % 10;
+   int init_asteroids = 8;
     for (i = 0; i < init_asteroids; i++) {
         Asteroid *a = new Asteroid();
         m_asteroids.push_back(a);
-    }*/
+    }
 
-    asteroid = new Asteroid();
+   // asteroid = new Asteroid();
 }
 
 View::~View()
@@ -487,12 +485,10 @@ void View::renderScene()
 
     glBindTexture(GL_TEXTURE_2D, m_texture);
     m_shaderPrograms["displacement"]->bind();
-    m_shaderPrograms["displacement"]->setUniformValue("seed", (GLfloat)asteroid->m_seed);
+  //  m_shaderPrograms["displacement"]->setUniformValue("seed", (GLfloat)asteroid->m_seed);
 
     m_shaderPrograms["displacement"]->setUniformValue("textureMap", m_texture);
-    glPushMatrix();
     renderAsteroids();
-    glPopMatrix();
     m_shaderPrograms["displacement"]->release();
     glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -517,7 +513,9 @@ void View::renderAsteroids(){
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
     glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
     glLightfv(GL_LIGHT0, GL_POSITION, position);*/
-    asteroid->draw(m_fps, m_increment);
+    foreach (Asteroid * a, m_asteroids) {
+        a->draw(m_fps, m_increment);
+    }
 
 }
 

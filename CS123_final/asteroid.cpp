@@ -23,8 +23,8 @@ Asteroid::Asteroid()
                          0, 0, 0, 1);
 
 
-    m_rows = 60;
-    m_cols = 60;
+    m_rows = 30;
+    m_cols = 30;
     m_radius = .5;
     m_seed = rand();
     m_numVertices = (m_rows-1)*m_cols + 2;
@@ -264,10 +264,11 @@ void Asteroid::draw(float fps, float elapsed){
     m_scale.getTranspose().fillArray(matrix);
 
   //  glEnable(GL_LIGHTING);
-//    glMultMatrixd(matrix);
-   // m_position += m_translation;
-   // glRotatef(90+elapsed, m_position.x,m_position.y,m_position.z);
-  //  glTranslatef(m_position.x * (elapsed/1000000), m_position.y*(elapsed/1000000), m_position.z*(elapsed/1000000));
+    glPushMatrix();
+    glMultMatrixd(matrix);
+    m_position += m_translation;
+    glRotatef(90+elapsed, m_position.x,m_position.y,m_position.z);
+    glTranslatef(m_position.x * (elapsed/1000000), m_position.y*(elapsed/1000000), m_position.z*(elapsed/1000000));
 
   //  drawTop();
    // drawBody();
@@ -275,5 +276,6 @@ void Asteroid::draw(float fps, float elapsed){
 
     gluSphere(m_quadric, .5f, 30,30);
 
+    glPopMatrix();
   //  glDisable(GL_LIGHTING);
 }
