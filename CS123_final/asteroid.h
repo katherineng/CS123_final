@@ -36,6 +36,7 @@ public:
     void calculateVertices();
     Vector4 getPosition();
     void setRadius(float r);
+    double getRadius();
 
 };
 
