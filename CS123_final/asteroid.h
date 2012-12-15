@@ -18,6 +18,7 @@ public:
 
     double m_radius;
     double m_seed;
+    GLint *m_displacement;
 
     void draw(float fps, float elapsed);
     Vector4 getPosition();

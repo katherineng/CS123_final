@@ -32,6 +32,12 @@ Asteroid::Asteroid()
     m_radius = .5;
     m_seed = rand();
 
+    m_displacement = new int[512];
+
+    for (int i = 0; i < 512; i++) {
+        m_displacement[i] = (GLint) rand() % 256;
+    }
+
     gluQuadricTexture(m_quadric, GL_TRUE);
     gluQuadricNormals(m_quadric, GL_SMOOTH);
 }
@@ -39,6 +45,7 @@ Asteroid::Asteroid()
 Asteroid::~Asteroid(){
 
     gluDeleteQuadric(m_quadric);
+    delete[] m_displacement;
 
 }
 
@@ -67,7 +74,7 @@ void Asteroid::draw(float fps, float elapsed){
 
     glRotatef(90+elapsed, m_position.x,m_position.y,m_position.z);
     glTranslatef(m_position.x, m_position.y, m_position.z);
-    gluSphere(m_quadric, m_radius, 15,15);
+    gluSphere(m_quadric, m_radius, 10, 10);
 
     glPopMatrix();
     glDisable(GL_TEXTURE_GEN_S);
