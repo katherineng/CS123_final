@@ -170,7 +170,7 @@ void ParticleEmitter::drawParticles()
                 }
 
             }
-            m_numParticles[j] -= (int) 1000;
+            //m_numParticles[j] -= (int) 1000;
             glDisable(GL_BLEND);
             glDepthMask(true);
          //   glAccum(GL_MULT,.95);
