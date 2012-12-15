@@ -1,5 +1,18 @@
 #include "particleemitter.h"
 #include <iostream>
+
+#include <QApplication>
+#include <QKeyEvent>
+#include <iostream>
+#include <QFileDialog>
+#include <QGLFramebufferObject>
+#include <QGLShaderProgram>
+#include <QMouseEvent>
+#include <QTime>
+#include <QTimer>
+#include <QWheelEvent>
+#include <GL/glu.h>
+#include <vector>
 using namespace std;
 
 ParticleEmitter::ParticleEmitter(GLuint textureId, Vector3 color, Vector3 velocity,
@@ -9,10 +22,18 @@ ParticleEmitter::ParticleEmitter(GLuint textureId, Vector3 color, Vector3 veloci
                     m_fuzziness(fuzziness), m_scale(scale), m_color(color), m_velocity(velocity),
                     m_force(force)
 {
-
-    m_quadric = gluNewQuadric();
-   // addExplosion(Vector4(0,0,0,0));
-
+    QFile file2("textures/smoke.png");
+    QImage image2, texture2;
+    image2.load(file2.fileName());
+    texture2 = QGLWidget::convertToGLFormat(image2);
+    //Put your code here
+    glGenTextures(1, &m_smokeTex);
+    glBindTexture(GL_TEXTURE_2D, m_smokeTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture2.width(), texture2.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture2.bits());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+   // gluBuild2DMipmaps(GL_TEXTURE_2D, 3, texture.width(), texture.height(), GL_RGB, GL_UNSIGNED_BYTE, texture.bits());
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 ParticleEmitter::~ParticleEmitter()
@@ -20,13 +41,6 @@ ParticleEmitter::~ParticleEmitter()
     foreach(Particle *particleList, m_particles)
         delete[] particleList;
 
-    /*if (m_particles)
-    {
-        delete[] m_particles;
-        m_particles = 0;
-    }*/
-
-    delete m_quadric;
     glDeleteTextures(1, &m_textureID);
 }
 
@@ -98,6 +112,24 @@ void ParticleEmitter::updateParticles()
     }
 }
 
+void ParticleEmitter::renderTexturedQuad(int width, int height) {
+    // Clamp value to edge of texture when texture index is out of bounds
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // Draw the  quad
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex2f(0.0f, 0.0f);
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex2f(width, 0.0f);
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex2f(width, height);
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex2f(0.0f, height);
+    glEnd();
+}
+
 /**
   * You need to fill this in.
   *
@@ -106,9 +138,6 @@ void ParticleEmitter::updateParticles()
   */
 void ParticleEmitter::drawParticles()
 {
-    //Put your code here
-
-
     Vector4 translate;
     Particle *particles;
     int size = explosionLocations.size();
@@ -123,10 +152,11 @@ void ParticleEmitter::drawParticles()
             particles = m_particles[j];
             glEnable(GL_BLEND);
             glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, m_textureID);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            glBindTexture(GL_TEXTURE_2D, m_smokeTex);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glDepthMask(false);
             partNum =  m_numParticles[j];
+
             for (int i = 0; i < partNum; i++){
 
                 if(particles[i].active){
@@ -134,13 +164,7 @@ void ParticleEmitter::drawParticles()
                     glPushAttrib(GL_CURRENT_BIT);
                     glTranslatef(translate.x, translate.y, translate.z);
                     glColor4f(particles[i].color.x,particles[i].color.y, particles[i].color.z, particles[i].life);
-                    glBegin(GL_POINTS);
-
-
-                    glPointSize(1000);
-                    glVertex3f(particles[i].pos.x, particles[i].pos.y, particles[i].pos.z);
-
-                    glEnd();
+                    renderTexturedQuad(1, 1);
                     glPopAttrib();
                     glPopMatrix();
                 }
@@ -149,9 +173,9 @@ void ParticleEmitter::drawParticles()
             m_numParticles[j] -= (int) 1000;
             glDisable(GL_BLEND);
             glDepthMask(true);
-            glAccum(GL_MULT,.95);
-            glAccum(GL_ACCUM, .95);
-            glAccum(GL_RETURN, 1);
+         //   glAccum(GL_MULT,.95);
+        //    glAccum(GL_ACCUM, .05);
+         //   glAccum(GL_RETURN, 1);
 
         }
     }

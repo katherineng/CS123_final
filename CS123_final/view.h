@@ -18,7 +18,6 @@
 class QGLShaderProgram;
 class QGLFramebufferObject;
 
-
 class View : public QGLWidget
 {
     Q_OBJECT
@@ -82,12 +81,14 @@ private:
     float m_prevFps, m_fps, m_increment;
     OrbitCamera m_camera;
 
+    void renderExplosion();
     // Resources
     QHash<QString, QGLShaderProgram *> m_shaderPrograms; // hash map of all shader programs
     QHash<QString, QGLFramebufferObject *> m_framebufferObjects; // hash map of all framebuffer objects
     GLuint m_skybox; // skybox call list ID
     GLuint m_cubeMap; // cubeMap texture ID
     GLuint m_texture;
+    GLuint m_smokeTex;
     QFont m_font; // font for rendering text
     QGLShaderProgram *newShaderProgram(const QGLContext *context, QString vertShader, QString fragShader);
 private slots:

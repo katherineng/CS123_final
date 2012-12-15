@@ -77,10 +77,11 @@ float perlinNoise(float x, float y, float z){
 }
 
 void main(){
-gl_TexCoord[0] = gl_MultiTexCoord0;
+    gl_TexCoord[0] = gl_MultiTexCoord0;
     displacement = mod(abs(perlinNoise(gl_Vertex.x,gl_Vertex.y, gl_Vertex.z)), 1.0);////min(max(0.0,perlinNoise(gl_Vertex.x,gl_Vertex.y, gl_Vertex.z)), 1.0);
     vec4 vertexPrime = gl_Vertex+displacement*.3*vec4(gl_Normal,0);
     gl_Position = gl_ModelViewProjectionMatrix * vertexPrime;    
+
     //gl_Position = ftransform();
  /*   
     displacement = gl_TexCoord[0].x ;
