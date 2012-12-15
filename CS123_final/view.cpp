@@ -43,6 +43,7 @@ View::View(QWidget *parent) : QGLWidget(parent)
 
     initializeAsteroids(40);
     changeDirection = false;
+    m_texture = 0;
 
    // asteroid = new Asteroid();
 }
@@ -176,7 +177,9 @@ void View::initializeResources()
     m_skybox = loadSkybox();
     cout << "Loaded skybox..." << endl;
 
-    QFile file("textures/asteroid.jpg");
+    QFile file("textures/asteroid1.jpg");
+
+    if(!file.exists()) cout << "no existe" << endl;
     QImage image, texture;
     image.load(file.fileName());
     texture = QGLWidget::convertToGLFormat(image);
@@ -184,9 +187,9 @@ void View::initializeResources()
     glGenTextures(1, &m_texture);
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width(), texture.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.bits());
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    gluBuild2DMipmaps(GL_TEXTURE_2D, 3, texture.width(), texture.height(), GL_RGB, GL_UNSIGNED_BYTE, texture.bits());
+   // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+   // gluBuild2DMipmaps(GL_TEXTURE_2D, 3, texture.width(), texture.height(), GL_RGB, GL_UNSIGNED_BYTE, texture.bits());
     glBindTexture(GL_TEXTURE_2D, 0);
 
 
@@ -582,7 +585,23 @@ void View::applyPerspectiveCamera(float width, float height)
     glLoadIdentity();
 }
 
+void View::renderTexturedQuad(int width, int height) {
+    // Clamp value to edge of texture when texture index is out of bounds
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+    // Draw the  quad
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex2f(0.0f, 0.0f);
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex2f(width, 0.0f);
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex2f(width, height);
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex2f(0.0f, height);
+    glEnd();
+}
 /**
   Renders the scene.  May be called multiple times by paintGL() if necessary.
 **/
@@ -637,21 +656,22 @@ void View::renderScene()
     m_emitter->drawParticles();         //Draw the particles
     glEnable(GL_TEXTURE_2D);
 
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_texture);
     m_shaderPrograms["displacement"]->bind();
   //  m_shaderPrograms["displacement"]->setUniformValue("seed", (GLfloat)asteroid->m_seed);
 
-    m_shaderPrograms["displacement"]->setUniformValue("textureMap", m_texture);
-    glBindTexture(GL_TEXTURE_2D, m_texture);
+    m_shaderPrograms["displacement"]->setUniformValue("textureMap",GL_TEXTURE0);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     // Enable alpha blending and render the texture to the screen
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE);
-    glDisable(GL_BLEND);
+   // glEnable(GL_BLEND);
+    //glBlendFunc(GL_ONE, GL_ONE);
+    renderTexturedQuad(this->width() , this->height());
     renderAsteroids();
     m_shaderPrograms["displacement"]->release();
+    //glDisable(GL_BLEND);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     // Disable culling, depth testing and cube maps
@@ -694,31 +714,6 @@ void View::wheelEvent(QWheelEvent *event)
 }
 
 
-/**
-  Draws a textured quad. The texture must be bound and unbound
-  before and after calling this method - this method assumes that the texture
-  has been bound beforehand.
-
-  @param w: the width of the quad to draw
-  @param h: the height of the quad to draw
-**/
-void View::renderTexturedQuad(int width, int height) {
-    // Clamp value to edge of texture when texture index is out of bounds
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    // Draw the  quad
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0f, 0.0f);
-    glVertex2f(0.0f, 0.0f);
-    glTexCoord2f(1.0f, 0.0f);
-    glVertex2f(width, 0.0f);
-    glTexCoord2f(1.0f, 1.0f);
-    glVertex2f(width, height);
-    glTexCoord2f(0.0f, 1.0f);
-    glVertex2f(0.0f, height);
-    glEnd();
-}
 
 
 

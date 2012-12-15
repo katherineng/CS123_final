@@ -53,11 +53,11 @@ void Asteroid::draw(float fps, float elapsed){
     double matrix[16];
     m_scale.getTranspose().fillArray(matrix);
 
-    glEnable(GL_TEXTURE_2D);
+    //glEnable(GL_TEXTURE_2D);
 
     glEnable(GL_TEXTURE_GEN_S);
     glEnable(GL_TEXTURE_GEN_T);
-    glTexGeni(GL_S,GL_TEXTURE_GEN_MODE,GL_SPHERE_MAP);
+   glTexGeni(GL_S,GL_TEXTURE_GEN_MODE,GL_SPHERE_MAP);
     glTexGeni(GL_T,GL_TEXTURE_GEN_MODE,GL_SPHERE_MAP);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 

@@ -46,7 +46,6 @@ public:
     void paintText();
     void deleteAsteroids();
     void initializeAsteroids(int init_asteroids);
-
     GLuint loadTexture(const QString &path);
     ParticleEmitter *m_emitter;
 
