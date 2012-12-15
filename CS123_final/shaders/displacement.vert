@@ -3,6 +3,8 @@
 
 varying float displacement;
 uniform sampler2D textureMap;
+varying vec3 normal;
+varying vec3 pos;
 
 int p[] = { 151,160,137,91,90,15,
    131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
@@ -76,10 +78,12 @@ float perlinNoise(float x, float y, float z){
 }
 
 void main(){
-gl_TexCoord[0] = gl_MultiTexCoord0;
+    normal = gl_NormalMatrix * gl_Normal;
+    gl_TexCoord[0] = gl_MultiTexCoord0;
     displacement = mod(abs(perlinNoise(gl_Vertex.x,gl_Vertex.y, gl_Vertex.z)), 1.0);////min(max(0.0,perlinNoise(gl_Vertex.x,gl_Vertex.y, gl_Vertex.z)), 1.0);
     vec4 vertexPrime = gl_Vertex+displacement*.3*vec4(gl_Normal,0);
     gl_Position = gl_ModelViewProjectionMatrix * vertexPrime;    
+    pos = gl_Position;
     //gl_Position = ftransform();
  /*   
     displacement = gl_TexCoord[0].x ;

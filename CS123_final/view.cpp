@@ -178,8 +178,6 @@ void View::initializeResources()
     cout << "Loaded skybox..." << endl;
 
     QFile file("textures/asteroid1.jpg");
-
-    if(!file.exists()) cout << "no existe" << endl;
     QImage image, texture;
     image.load(file.fileName());
     texture = QGLWidget::convertToGLFormat(image);
@@ -187,10 +185,12 @@ void View::initializeResources()
     glGenTextures(1, &m_texture);
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width(), texture.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.bits());
-   // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
    // gluBuild2DMipmaps(GL_TEXTURE_2D, 3, texture.width(), texture.height(), GL_RGB, GL_UNSIGNED_BYTE, texture.bits());
     glBindTexture(GL_TEXTURE_2D, 0);
+
+
 
 
     m_emitter = new ParticleEmitter(loadTexture("/textures/particle2.bmp"),
@@ -199,8 +199,8 @@ void View::initializeResources()
                                     Vector3(0.0f, 0.0001f, 0.0f), //force
                                     100.f, //scaole
                                     10.0f, //fuzziness
-                                    50.0f / 10000.0f, //speed
-                                    30000); //max particles
+                                    10.0f / 10000.0f, //speed
+                                    30); //max particles
 
     loadCubeMap();
     cout << "Loaded cube map..." << endl;
@@ -518,6 +518,7 @@ void View::createShaderPrograms()
 {
     const QGLContext *ctx = context();
     m_shaderPrograms["displacement"] = newShaderProgram(ctx, "shaders/displacement.vert", "shaders/displacement.frag");
+    m_shaderPrograms["particles"] = newShaderProgram(ctx, "shaders/particles.vert", "shaders/particles.frag");
 }
 
 
@@ -653,7 +654,7 @@ void View::renderScene()
 
     // Render the dragon with the refraction shader bound
     m_emitter->updateParticles();       //Move the particles
-    m_emitter->drawParticles();         //Draw the particles
+    m_emitter->drawParticles();
     glEnable(GL_TEXTURE_2D);
 
     glActiveTexture(GL_TEXTURE0);
@@ -670,11 +671,77 @@ void View::renderScene()
     m_shaderPrograms["displacement"]->release();
     glBindTexture(GL_TEXTURE_2D, 0);
 
+
+
     // Disable culling, depth testing and cube maps
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
 
 }
+
+//void View::renderExplosion(){
+
+//    Vector4 translate;
+//    Particle *particles;
+//    int size = m_emitter->explosionLocations.size();
+//    int partNum;
+//    int time;
+//    Vector3 pos;
+//    for (int j = 0; j < size; j++){
+//        time =m_emitter->m_time[j];
+//        if (time > 3000){
+//            m_emitter->deleteParticles(j);
+//        } else {
+//            translate = m_emitter->explosionLocations[j];
+//            particles = m_emitter->m_particles[j];
+
+//            glEnable(GL_BLEND);
+//            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//            glEnable(GL_TEXTURE_2D);
+//            glBindTexture(GL_TEXTURE_2D, m_smokeTex);
+//           // glBindTexture(GL_TEXTURE_2D, m_emitter->m_textureID);
+//            glDepthMask(false);
+
+//            partNum =  m_emitter->m_numParticles[j];
+
+//            for (int i = 0; i < partNum; i++){
+
+//                if(particles[i].active){
+//                    glPushMatrix();
+//                   // m_shaderPrograms["particles"]->setUniformValue("translate", QVector3D(translate.x, translate.y, translate.z));
+//                  //  m_shaderPrograms["particles"]->setUniformValue("color", QVector4D(particles[i].color.x,particles[i].color.y, particles[i].color.z, particles[i].life));
+//                   // glPushAttrib(GL_CURRENT_BIT);
+//                 //   glTranslatef(translate.x, translate.y, translate.z);
+//                 //   glColor4f(particles[i].color.x,particles[i].color.y, particles[i].color.z, particles[i].life);
+//                   /* glBegin(GL_POINTS);
+
+
+//                    glPointSize(1000);
+//                    glVertex3f(particles[i].pos.x, particles[i].pos.y, particles[i].pos.z);*/
+
+//                    glTranslatef(translate.x, translate.y, translate.z);
+//                    glPushAttrib(GL_CURRENT_BIT);
+
+//                    glColor4f(particles[i].color.x,particles[i].color.y, particles[i].color.z, particles[i].life);
+//                    renderTexturedQuad(1, 1);
+//                    glPopAttrib();
+
+//                   // glEnd();
+//                  //  glPopAttrib();
+//                    glPopMatrix();
+//                }
+
+//            }
+//           // m_emitter->m_numParticles[j] -= (int) 1;
+//            glDisable(GL_BLEND);
+//            glDepthMask(true);
+//            glAccum(GL_MULT,.95);
+//            glAccum(GL_ACCUM, .05);
+//            glAccum(GL_RETURN, 1);
+
+//        }
+//    }
+//}
 
 void View::renderAsteroids(){
     glEnable(GL_LIGHTING);
@@ -687,7 +754,7 @@ void View::renderAsteroids(){
     GLfloat ambientLight[] = {0.1f, 0.1f, 0.1f, 1.0f};
     GLfloat diffuseLight[] = { 1.0f, 1.0f, 1.0, 1.0f };
     GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-    GLfloat position[] = { 2.0f, 3.0f, 2.0f, 1.0f };
+    GLfloat position[] = { 0.0f, 0.0f, 1000.0f, 1.0f };
     glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
     glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);

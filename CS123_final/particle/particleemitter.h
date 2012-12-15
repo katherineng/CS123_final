@@ -1,56 +1,67 @@
 #ifndef PARTICLEEMITTER_H
 #define PARTICLEEMITTER_H
 
+
 #include <QtOpenGL>
+#include <qgl.h>
+#include <QTime>
+#include <QTimer>
+#include <QGLWidget>
+#include <QHash>
+#include <QString>
+#include <QTimer>
+#include <QFile>
 #include "CS123Common.h"
 #include "CS123Algebra.h"
 
-class ParticleEmitter
+class QGLShaderProgram;
+/**
+  * Basic definition for a particle. You should not need to modify this.
+  */
+struct __attribute__ ((aligned (16))) Particle
 {
     /**
-      * Basic definition for a particle. You should not need to modify this.
+      * Determines whether or not this particle is active. If it is not active,
+      * it should not be drawn or modified by updateParticles().
       */
-    struct __attribute__ ((aligned (16))) Particle
-    {
-        /**
-          * Determines whether or not this particle is active. If it is not active,
-          * it should not be drawn or modified by updateParticles().
-          */
-        bool active;
-        /**
-          * The amount of life remaining. When the particle is first born, it should
-          * have a life of 1.0. Each step this should decrease by decay (i.e.
-          * life -= decay). When this value reaches zero, the particle should reset.
-          */
-        float life;
-        /**
-          * The amount the life of this particle decreases per step. See the documentation
-          * for Particle.life.
-          */
-        float decay;
-        /**
-          * The particle's color. Currently the same for all particles; however, it would be
-          * possible to have randomly generated colors or colors based on time. Used when
-          * drawing the particle.
-          */
-        Vector3 color;
-        /**
-          * The particle's current position in 3D space. Updated every step based on
-          * the particle's velocity.
-          */
-        Vector3 pos;
-        /**
-          * The direction this particle is currently moving. The velocity of any particle
-          * in the system is: velocity = ParticleEmitter.m_speed * Particle.dir
-          */
-        Vector3 dir;
-        /**
-          * The force acting on this particle (e.g. from gravity). At each update step,
-          * Particle.dir += Particle.force.
-          */
-        Vector3 force;
-    };
+    bool active;
+    /**
+      * The amount of life remaining. When the particle is first born, it should
+      * have a life of 1.0. Each step this should decrease by decay (i.e.
+      * life -= decay). When this value reaches zero, the particle should reset.
+      */
+    float life;
+    /**
+      * The amount the life of this particle decreases per step. See the documentation
+      * for Particle.life.
+      */
+    float decay;
+    /**
+      * The particle's color. Currently the same for all particles; however, it would be
+      * possible to have randomly generated colors or colors based on time. Used when
+      * drawing the particle.
+      */
+    Vector3 color;
+    /**
+      * The particle's current position in 3D space. Updated every step based on
+      * the particle's velocity.
+      */
+    Vector3 pos;
+    /**
+      * The direction this particle is currently moving. The velocity of any particle
+      * in the system is: velocity = ParticleEmitter.m_speed * Particle.dir
+      */
+    Vector3 dir;
+    /**
+      * The force acting on this particle (e.g. from gravity). At each update step,
+      * Particle.dir += Particle.force.
+      */
+    Vector3 force;
+};
 
+
+class ParticleEmitter
+{
 
 public:
     ParticleEmitter(GLuint textureId = 0,
@@ -118,7 +129,7 @@ public:
 
     void addExplosion(Vector4 location);
 
-protected:
+
     /** Contains all particles in the scene, active or inactive */
     /** The maximum number of particles in the scene (same as the size of the m_particles array) */
     int m_maxParticles;
@@ -140,7 +151,10 @@ protected:
     vector<Particle*> m_particles;
     vector<int> m_time;
     vector<int> m_numParticles;
+    GLuint m_smokeTex;
     void deleteParticles(int index);
+    void renderTexturedQuad(int width, int height);
+
 };
 
 

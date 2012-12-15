@@ -67,7 +67,7 @@ void Asteroid::draw(float fps, float elapsed){
 
     glRotatef(90+elapsed, m_position.x,m_position.y,m_position.z);
     glTranslatef(m_position.x, m_position.y, m_position.z);
-    gluSphere(m_quadric, m_radius, 30,30);
+    gluSphere(m_quadric, m_radius, 15,15);
 
     glPopMatrix();
     glDisable(GL_TEXTURE_GEN_S);
