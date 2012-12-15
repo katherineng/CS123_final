@@ -16,27 +16,14 @@ public:
     Vector4 m_position;
     Matrix4x4 m_scale;
 
-    Vector4 *m_displacedNormals;
-    Vector4 *m_vertices;
-    double *m_displacement;
-
-    int m_numVertices;
-    int m_rows;
-    int m_cols;
     double m_radius;
     double m_seed;
 
     void draw(float fps, float elapsed);
-    void drawTop();
-    void drawBody();
-    void drawBottom();
-    void setDisplacement();
-    void setDisplacedNormals();
-    Vector4 calculateDisplacedNormal(int i);
-    void calculateVertices();
     Vector4 getPosition();
     void setRadius(float r);
     double getRadius();
+    GLuint m_texture;
 
 };
 

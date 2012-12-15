@@ -53,7 +53,14 @@ struct CS123Rectangle {
    int minY;
    int maxY;
 };
-
+/**
+  * Returns a uniformly distributed random number on the given interval.
+  * ex. urand(-1, 1)  would return a random number between -1 and 1.
+  */
+static inline float urand(float lower = 0.0f, float upper = 1.0f)
+{
+    return (rand() % 1000) / 1000.0f * (upper - lower) + lower;
+}
 
 // ----------------------
 // Deallocation Utilities

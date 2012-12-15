@@ -18,17 +18,22 @@ SOURCES += main.cpp \
     camera.cpp \
     asteroid.cpp \
     CS123Matrix.inl \
-    CS123Vector.inl
+    CS123Vector.inl \
+    selectionrecorder.cpp \
+    particle/particleemitter.cpp
 
 HEADERS += mainwindow.h \
     view.h \
     camera.h \
     asteroid.h \
     CS123Algebra.h \
-    CS123Common.h
+    CS123Common.h \
+    selectionrecorder.h \
+    particle/particleemitter.h
 
 FORMS += mainwindow.ui
-
+INCLUDEPATH += particle
+DEPENDPATH += particle
 OTHER_FILES += \
     textures/posz.jpg \
     textures/posx.jpg \

@@ -12,6 +12,8 @@
 
 #include "camera.h"
 #include "asteroid.h"
+#include "selectionrecorder.h"
+#include "particle/particleemitter.h"
 
 class QGLShaderProgram;
 class QGLFramebufferObject;
@@ -28,9 +30,7 @@ public:
     GLuint loadSkybox();
 
     //from lab09
-
     void wheelEvent(QWheelEvent *event);
-
     // Initialization code
     void initializeResources();
     void loadCubeMap();
@@ -44,9 +44,16 @@ public:
     void renderScene();
     void renderAsteroids();
     void paintText();
+    void deleteAsteroids();
+    void initializeAsteroids(int init_asteroids);
+
+    GLuint loadTexture(const QString &path);
+    ParticleEmitter *m_emitter;
 
 protected:
     vector<Asteroid*> m_asteroids;
+    Vector4 m_hit;
+    Vector2 m_oldMouse;
 
 private:
     QTime m_time;
@@ -54,7 +61,7 @@ private:
     QTime m_clock;
 
 
-    Asteroid *asteroid;
+    Asteroid *m_selection;
 
     void initializeGL();
     void paintGL();
@@ -63,13 +70,17 @@ private:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
+    Vector2 m_prevMousePos;
+    Vector2 m_dragMouse;
+    Vector4 getMouseRay(const Vector2 &mouse, const OrbitCamera &camera);
+    void setSelection(const Vector2 &mouse);
+    bool changeDirection;
 
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 
     int m_prevTime;
     float m_prevFps, m_fps, m_increment;
-    Vector2 m_prevMousePos;
     OrbitCamera m_camera;
 
     // Resources
