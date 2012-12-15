@@ -666,12 +666,8 @@ void View::renderScene()
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     // Enable alpha blending and render the texture to the screen
-   // glEnable(GL_BLEND);
-    //glBlendFunc(GL_ONE, GL_ONE);
-    renderTexturedQuad(this->width() , this->height());
     renderAsteroids();
     m_shaderPrograms["displacement"]->release();
-    //glDisable(GL_BLEND);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     // Disable culling, depth testing and cube maps
@@ -681,8 +677,9 @@ void View::renderScene()
 }
 
 void View::renderAsteroids(){
+    glEnable(GL_LIGHTING);
     // Set up global (ambient) lighting
-   /* GLfloat global_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+    GLfloat global_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
     glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
 
@@ -694,10 +691,11 @@ void View::renderAsteroids(){
     glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
     glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
-    glLightfv(GL_LIGHT0, GL_POSITION, position);*/
+    glLightfv(GL_LIGHT0, GL_POSITION, position);
     foreach (Asteroid * a, m_asteroids) {
         a->draw(m_fps, m_increment);
     }
+    glDisable(GL_LIGHTING);
 
 }
 
