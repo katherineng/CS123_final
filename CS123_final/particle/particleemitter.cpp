@@ -43,11 +43,11 @@ void ParticleEmitter::resetParticle(int i, Particle *particles)
     particles[i].pos.z = 0;
     //Continue filling out code here
     particles[i].life = 1.0;
-    particles[i].decay = urand(.0025, .15);
+    particles[i].decay = urand(.01, .1);
     particles[i].color = m_color;
-    particles[i].force.x = urand(-m_fuzziness*.01, m_fuzziness *.01 + m_force.x);
-    particles[i].force.y = urand(-m_fuzziness*.01, m_fuzziness *.01 + m_force.y);
-    particles[i].force.z = urand(-m_fuzziness*.01, m_fuzziness *.01 + m_force.z);
+    particles[i].force.x = urand(-m_fuzziness*.99, m_fuzziness *.99 + m_force.x);
+    particles[i].force.y = urand(-m_fuzziness*.99, m_fuzziness *.99 + m_force.y);
+    particles[i].force.z = urand(-m_fuzziness*.99, m_fuzziness *.99 + m_force.z);
     particles[i].dir.x = urand(-m_fuzziness, m_fuzziness + m_velocity.x);
     particles[i].dir.y = urand(-m_fuzziness, m_fuzziness + m_velocity.y);
     particles[i].dir.z = urand(-m_fuzziness, m_fuzziness + m_velocity.z);
@@ -82,9 +82,9 @@ void ParticleEmitter::updateParticles()
         for(int i = 0; i < size; ++i)
         {
             if (particles[i].active){
-                particles[i].pos.x += fmod(particles[i].dir.x * m_speed,.2);
-                particles[i].pos.y += fmod(particles[i].dir.y * m_speed,.2);
-                particles[i].pos.z += fmod(particles[i].dir.z * m_speed,.2);
+                particles[i].pos.x += fmod(particles[i].dir.x * m_speed, .9);
+                particles[i].pos.y += fmod(particles[i].dir.y * m_speed, .9);
+                particles[i].pos.z += fmod(particles[i].dir.z * m_speed, .9);
                 particles[i].dir += particles[i].force;
                 particles[i].life  =particles[i].life - particles[i].decay;
                 if (particles[i].life < 0){
@@ -116,7 +116,7 @@ void ParticleEmitter::drawParticles()
     int time;
     for (int j = 0; j < size; j++){
         time = m_time[j];
-        if (time > 3000){
+        if (time > 1000){
             deleteParticles(j);
         } else {
             translate = explosionLocations[j];
@@ -146,7 +146,7 @@ void ParticleEmitter::drawParticles()
                 }
 
             }
-            m_numParticles[j] -= (int) 400;
+            m_numParticles[j] -= (int) 1000;
             glDisable(GL_BLEND);
             glDepthMask(true);
             glAccum(GL_MULT,.95);
