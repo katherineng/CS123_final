@@ -32,7 +32,6 @@ ParticleEmitter::ParticleEmitter(GLuint textureId, Vector3 color, Vector3 veloci
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture2.width(), texture2.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture2.bits());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-   // gluBuild2DMipmaps(GL_TEXTURE_2D, 3, texture.width(), texture.height(), GL_RGB, GL_UNSIGNED_BYTE, texture.bits());
     glBindTexture(GL_TEXTURE_2D, 0);
     maxTime = 2000;
 }
@@ -80,6 +79,9 @@ void ParticleEmitter::resetParticles(Particle *particles)
         particles[i].active = true;
 }
 
+/**
+  returns color between begin and end
+ */
 Vector3 ParticleEmitter::lerp(Vector3 begin, Vector3 end, float percent){
 
     float red = begin.x - (percent * (begin.x - end.x));
@@ -127,6 +129,9 @@ void ParticleEmitter::updateParticles()
     }
 }
 
+/**
+  used to render texture
+ */
 void ParticleEmitter::renderTexturedQuad(int width, int height) {
     // Clamp value to edge of texture when texture index is out of bounds
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -156,10 +161,8 @@ void ParticleEmitter::renderTexturedQuad(int width, int height) {
   * Draws each particle as a small, texture-mapped square of side-length m_scale.
   * Each square should be in the X/Y plane at Z = the particle's position's Z-coordinate.
   */
-void ParticleEmitter::drawParticles(double theta, double phi)
+void ParticleEmitter::drawParticles(double theta)
 {
-    Vector3 u;
-
     Vector4 translate;
     Particle *particles;
     int size = explosionLocations.size();
@@ -184,42 +187,6 @@ void ParticleEmitter::drawParticles(double theta, double phi)
                 if(particles[i].active && particles[i].life!=0){
                     glPushMatrix();
 
-                /*    l = -(l - Vector3(particles[i].pos.x,  particles[i].pos.y, particles[i].pos.z).getNormalized());
-                    r= r.cross(l);
-                    u = l.cross(r);
-
-
-                    float modelview[16];
-                    modelview[0]=r.x;   modelview[1]=u.x;   modelview[2]=l.x;   modelview[3]=particles[i].pos.x;
-                    modelview[4]=r.y;   modelview[5]=u.y;   modelview[6]=l.y;   modelview[7]=particles[i].pos.y;
-                    modelview[8]=r.z;   modelview[9]=u.z;   modelview[10]=l.z;   modelview[11]=particles[i].pos.z;
-                    modelview[12]=0;     modelview[13]=0;     modelview[14]=0;     modelview[15]=1;
-
-                    float modelview[16];
-                    int i,j;
-
-
-                    // get the current modelview matrix
-                    glGetFloatv(GL_MODELVIEW_MATRIX , modelview);
-
-                    // undo all rotations
-                    // beware all scaling is lost as well
-                    for( i=0; i<3; i++ )
-                            for( j=0; j<3; j++ ) {
-                                    if ( i==j )
-                                            modelview[i*4+j] = 1.0;
-                                    else
-                                            modelview[i*4+j] = 0.0;
-                            }
-
-                    // set the modelview with no rotations and scaling
-                    glLoadMatrixf(modelview);*/
-
-                    /*theta += delta.x * 0.01f;
-                    phi += delta.y * 0.01;
-
-                     -= floorf(theta / (2*M_PI)) * (2*M_PI);*/
-                    //double phi = MAX(0.01 - M_PI / 2, MIN(M_PI / 2 - 0.01, phi));
                     glPushAttrib(GL_CURRENT_BIT);
                     glRotatef(fmod((270 - theta), 360), 0.,1.,0.);
                     glColor4f(particles[i].color.x,particles[i].color.y, particles[i].color.z, particles[i].life);
@@ -230,7 +197,6 @@ void ParticleEmitter::drawParticles(double theta, double phi)
                 }
 
             }
-            //m_numParticles[j] -= (int) 1000;
             glDisable(GL_BLEND);
             glDepthMask(true);
          //   glAccum(GL_MULT,.95);
@@ -242,6 +208,9 @@ void ParticleEmitter::drawParticles(double theta, double phi)
 
 }
 
+/*
+ deletes a particle
+ */
 void ParticleEmitter::deleteParticles(int index){
     m_time.erase(m_time.begin() + index);
     m_particles.erase(m_particles.begin()+index);
@@ -249,6 +218,9 @@ void ParticleEmitter::deleteParticles(int index){
     m_numParticles.erase(m_numParticles.begin() + index);
 }
 
+/**
+  adds stuff when you want another explosion
+  */
 void ParticleEmitter::addExplosion(Vector4 location){
     explosionLocations.push_back(location);
     Particle *particleList= new Particle[m_maxParticles];

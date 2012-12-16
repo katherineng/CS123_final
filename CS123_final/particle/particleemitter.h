@@ -82,7 +82,7 @@ public:
       * Draws each particle as a small, texture-mapped square of side-length m_scale.
       * Each square should be in the X/Y plane at Z = the particle's position's Z-coordinate.
       */
-    void drawParticles(double theta, double phi);
+    void drawParticles(double theta);
     /**
       * You need to fill this in.
       *
@@ -147,14 +147,19 @@ public:
     Vector3 m_velocity;
     /** The force vector applied to every particle emitted into the scene */
     Vector3 m_force;
+
+    /** info about explosions */
     vector<Vector4> explosionLocations;
     vector<Particle*> m_particles;
     vector<int> m_time;
     vector<int> m_numParticles;
+
+    /** texture stuff */
     GLuint m_smokeTex;
-    int maxTime;
-    void deleteParticles(int index);
     void renderTexturedQuad(int width, int height);
+
+    void deleteParticles(int index);
+    int maxTime;
     Vector3 lerp(Vector3 begin, Vector3 end, float percent);
 
 };
