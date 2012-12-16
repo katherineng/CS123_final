@@ -2,7 +2,7 @@
 #define ASTEROID_H
 
 #include <QGLWidget>
-#include "CS123Algebra.h"
+#include "math/CS123Algebra.h"
 #define RAD_CONVERT (M_PI / 180.0)
 
 class Asteroid

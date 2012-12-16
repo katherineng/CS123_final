@@ -11,8 +11,8 @@
 #include <QString>
 #include <QTimer>
 #include <QFile>
-#include "CS123Common.h"
-#include "CS123Algebra.h"
+#include "math/CS123Common.h"
+#include "math/CS123Algebra.h"
 
 class QGLShaderProgram;
 /**

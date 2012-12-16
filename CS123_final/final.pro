@@ -19,7 +19,6 @@ SOURCES += main.cpp \
     asteroid.cpp \
     CS123Matrix.inl \
     CS123Vector.inl \
-    selectionrecorder.cpp \
     particle/particleemitter.cpp
 
 HEADERS += mainwindow.h \
@@ -28,12 +27,17 @@ HEADERS += mainwindow.h \
     asteroid.h \
     CS123Algebra.h \
     CS123Common.h \
-    selectionrecorder.h \
     particle/particleemitter.h
 
 FORMS += mainwindow.ui
-INCLUDEPATH += particle
-DEPENDPATH += particle
+INCLUDEPATH += particle \
+               math \
+               objects \
+               ui
+DEPENDPATH += particle \
+              math \
+              objects \
+              ui
 OTHER_FILES += \
     textures/posz.jpg \
     textures/posx.jpg \
