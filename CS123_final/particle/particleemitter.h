@@ -82,7 +82,7 @@ public:
       * Draws each particle as a small, texture-mapped square of side-length m_scale.
       * Each square should be in the X/Y plane at Z = the particle's position's Z-coordinate.
       */
-    void drawParticles();
+    void drawParticles(double theta, double phi);
     /**
       * You need to fill this in.
       *

@@ -136,12 +136,17 @@ void ParticleEmitter::renderTexturedQuad(int width, int height) {
     glBegin(GL_QUADS);
     glTexCoord2f(0.0f, 0.0f);
     glVertex2f(0.0f, 0.0f);
-    glTexCoord2f(1.0f, 0.0f);
-    glVertex2f(width, 0.0f);
-    glTexCoord2f(1.0f, 1.0f);
-    glVertex2f(width, height);
+
     glTexCoord2f(0.0f, 1.0f);
     glVertex2f(0.0f, height);
+
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex2f(width, height);
+
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex2f(width, 0.0f);
+
+
     glEnd();
 }
 
@@ -151,8 +156,10 @@ void ParticleEmitter::renderTexturedQuad(int width, int height) {
   * Draws each particle as a small, texture-mapped square of side-length m_scale.
   * Each square should be in the X/Y plane at Z = the particle's position's Z-coordinate.
   */
-void ParticleEmitter::drawParticles()
+void ParticleEmitter::drawParticles(double theta, double phi)
 {
+    Vector3 u;
+
     Vector4 translate;
     Particle *particles;
     int size = explosionLocations.size();
@@ -176,20 +183,47 @@ void ParticleEmitter::drawParticles()
 
                 if(particles[i].active && particles[i].life!=0){
                     glPushMatrix();
+
+                /*    l = -(l - Vector3(particles[i].pos.x,  particles[i].pos.y, particles[i].pos.z).getNormalized());
+                    r= r.cross(l);
+                    u = l.cross(r);
+
+
+                    float modelview[16];
+                    modelview[0]=r.x;   modelview[1]=u.x;   modelview[2]=l.x;   modelview[3]=particles[i].pos.x;
+                    modelview[4]=r.y;   modelview[5]=u.y;   modelview[6]=l.y;   modelview[7]=particles[i].pos.y;
+                    modelview[8]=r.z;   modelview[9]=u.z;   modelview[10]=l.z;   modelview[11]=particles[i].pos.z;
+                    modelview[12]=0;     modelview[13]=0;     modelview[14]=0;     modelview[15]=1;
+
+                    float modelview[16];
+                    int i,j;
+
+
+                    // get the current modelview matrix
+                    glGetFloatv(GL_MODELVIEW_MATRIX , modelview);
+
+                    // undo all rotations
+                    // beware all scaling is lost as well
+                    for( i=0; i<3; i++ )
+                            for( j=0; j<3; j++ ) {
+                                    if ( i==j )
+                                            modelview[i*4+j] = 1.0;
+                                    else
+                                            modelview[i*4+j] = 0.0;
+                            }
+
+                    // set the modelview with no rotations and scaling
+                    glLoadMatrixf(modelview);*/
+
+                    /*theta += delta.x * 0.01f;
+                    phi += delta.y * 0.01;
+
+                     -= floorf(theta / (2*M_PI)) * (2*M_PI);*/
+                    //double phi = MAX(0.01 - M_PI / 2, MIN(M_PI / 2 - 0.01, phi));
                     glPushAttrib(GL_CURRENT_BIT);
-                    glTranslatef(translate.x + particles[i].pos.x, translate.y + particles[i].pos.y, translate.z + particles[i].pos.z);
+                    glRotatef(fmod((270 - theta), 360), 0.,1.,0.);
                     glColor4f(particles[i].color.x,particles[i].color.y, particles[i].color.z, particles[i].life);
-
-                    GLfloat matrix[16];
-                    glGetFloatv(GL_MODELVIEW_MATRIX,matrix);
-                    float d = sqrt(pow(matrix[0], 2) + pow(matrix[4], 2) + pow(matrix[8], 2));
-                    //cout << matrix[7] << matrix[15] << matrix[8] << matrix[9] <<endl;
-                    matrix[0] = d; matrix[1] = 0.0f; matrix[2] = 0.0f;
-                    matrix[4] = 0.0f; matrix[5] = d; matrix[6] = 0.0f;
-                    matrix[8] = 0; matrix[9] = 0; matrix[10] = d;
-                    matrix[12] = 0; matrix[13] = 0; matrix[14] = 0; matrix[15] =1;
-                    glLoadMatrixf(matrix);
-
+                    glTranslatef(translate.x + particles[i].pos.x, translate.y + particles[i].pos.y, translate.z + particles[i].pos.z);
                     renderTexturedQuad(1, 1);
                     glPopAttrib();
                     glPopMatrix();

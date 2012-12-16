@@ -16,22 +16,6 @@ using std::endl;
 
 
 
-const int p[] = { 151,160,137,91,90,15,
-   131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
-   190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
-   88,237,149,56,87,174,20,125,136,171,168, 68,175,74,165,71,134,139,48,27,166,
-   77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,
-   102,143,54, 65,25,63,161, 1,216,80,73,209,76,132,187,208, 89,18,169,200,196,
-   135,130,116,188,159,86,164,100,109,198,173,186, 3,64,52,217,226,250,124,123,
-   5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,
-   223,183,170,213,119,248,152, 2,44,154,163, 70,221,153,101,155,167, 43,172,9,
-   129,22,39,253, 19,98,108,110,79,113,224,232,178,185, 112,104,218,246,97,228,
-   251,34,242,193,238,210,144,12,191,179,162,241, 81,51,145,235,249,14,239,107,
-   49,192,214, 31,181,199,106,157,184, 84,204,176,115,121,50,45,127, 4,150,254,
-   138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
-   };
-
-
 extern "C"
 {
     extern void APIENTRY glActiveTexture(GLenum);
@@ -379,17 +363,13 @@ void View::mouseMoveEvent(QMouseEvent *event)
         Vector2 pos(event->x(), event->y());
         if (event->buttons() & Qt::LeftButton || event->buttons() & Qt::RightButton)
         {
-            m_camera.mouseMove(pos - m_prevMousePos);
+            m_delta = pos - m_prevMousePos;
+            m_camera.mouseMove(m_delta);
         }
         m_prevMousePos = pos;
-
-    // TODO: Handle mouse movements here
 }
 
-void View::mouseReleaseEvent(QMouseEvent *event)
-{
-
-
+void View::mouseReleaseEvent(QMouseEvent *event){
 }
 
 void View::keyPressEvent(QKeyEvent *event)
@@ -553,14 +533,12 @@ void View::renderTexturedQuad(int width, int height) {
     glVertex2f(0.0f, height);
     glEnd();
 }
+
 /**
   Renders the scene.  May be called multiple times by paintGL() if necessary.
 **/
 void View::renderScene()
 {
-
-
-
     int i, j, num_asteroids = m_asteroids.size();
     for (i = 0; i < num_asteroids; i++) {
         Vector4 pos1 = m_asteroids[i]->getPosition();
@@ -583,7 +561,6 @@ void View::renderScene()
         }
     }
 
-
     m_increment++;
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);
@@ -602,16 +579,22 @@ void View::renderScene()
     // Enable culling (back) faces for rendering the dragon
     glEnable(GL_CULL_FACE);
 
+    Vector3 dir;
+    Vector3 x;
+    dir = -x.fromAngles(m_camera.theta, m_camera.phi);
+    Vector3 eye(m_camera.center - dir * m_camera.zoom);
+
     // Render the dragon with the refraction shader bound
     m_emitter->updateParticles();       //Move the particles
-    m_emitter->drawParticles();
+    Vector3 l = eye;
+    Vector3 r = Vector3(m_camera.up.x, m_camera.up.y, m_camera.up.z);
+    m_emitter->drawParticles(m_camera.theta * 180./M_PI, m_camera.phi * 180./M_PI);
+
     glEnable(GL_TEXTURE_2D);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_texture);
     m_shaderPrograms["displacement"]->bind();
-  //  m_shaderPrograms["displacement"]->setUniformValue("seed", (GLfloat)asteroid->m_seed);
-    //m_shaderPrograms["displacement"]->setUniformValueArray("p", p, 256);
     m_shaderPrograms["displacement"]->setUniformValue("textureMap",GL_TEXTURE0);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -621,77 +604,11 @@ void View::renderScene()
     m_shaderPrograms["displacement"]->release();
     glBindTexture(GL_TEXTURE_2D, 0);
 
-
-
     // Disable culling, depth testing and cube maps
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
-
 }
 
-//void View::renderExplosion(){
-
-//    Vector4 translate;
-//    Particle *particles;
-//    int size = m_emitter->explosionLocations.size();
-//    int partNum;
-//    int time;
-//    Vector3 pos;
-//    for (int j = 0; j < size; j++){
-//        time =m_emitter->m_time[j];
-//        if (time > 3000){
-//            m_emitter->deleteParticles(j);
-//        } else {
-//            translate = m_emitter->explosionLocations[j];
-//            particles = m_emitter->m_particles[j];
-
-//            glEnable(GL_BLEND);
-//            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//            glEnable(GL_TEXTURE_2D);
-//            glBindTexture(GL_TEXTURE_2D, m_smokeTex);
-//           // glBindTexture(GL_TEXTURE_2D, m_emitter->m_textureID);
-//            glDepthMask(false);
-
-//            partNum =  m_emitter->m_numParticles[j];
-
-//            for (int i = 0; i < partNum; i++){
-
-//                if(particles[i].active){
-//                    glPushMatrix();
-//                   // m_shaderPrograms["particles"]->setUniformValue("translate", QVector3D(translate.x, translate.y, translate.z));
-//                  //  m_shaderPrograms["particles"]->setUniformValue("color", QVector4D(particles[i].color.x,particles[i].color.y, particles[i].color.z, particles[i].life));
-//                   // glPushAttrib(GL_CURRENT_BIT);
-//                 //   glTranslatef(translate.x, translate.y, translate.z);
-//                 //   glColor4f(particles[i].color.x,particles[i].color.y, particles[i].color.z, particles[i].life);
-//                   /* glBegin(GL_POINTS);
-
-
-//                    glPointSize(1000);
-//                    glVertex3f(particles[i].pos.x, particles[i].pos.y, particles[i].pos.z);*/
-
-//                    glTranslatef(translate.x, translate.y, translate.z);
-//                    glPushAttrib(GL_CURRENT_BIT);
-
-//                    glColor4f(particles[i].color.x,particles[i].color.y, particles[i].color.z, particles[i].life);
-//                    renderTexturedQuad(1, 1);
-//                    glPopAttrib();
-
-//                   // glEnd();
-//                  //  glPopAttrib();
-//                    glPopMatrix();
-//                }
-
-//            }
-//           // m_emitter->m_numParticles[j] -= (int) 1;
-//            glDisable(GL_BLEND);
-//            glDepthMask(true);
-//            glAccum(GL_MULT,.95);
-//            glAccum(GL_ACCUM, .05);
-//            glAccum(GL_RETURN, 1);
-
-//        }
-//    }
-//}
 
 void View::renderAsteroids(){
     glEnable(GL_LIGHTING);
@@ -714,7 +631,6 @@ void View::renderAsteroids(){
         a->draw(m_fps, m_increment);
     }
     glDisable(GL_LIGHTING);
-
 }
 
 

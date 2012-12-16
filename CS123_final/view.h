@@ -43,10 +43,6 @@ public:
     void renderScene();
     void renderAsteroids();
     void paintText();
-    void deleteAsteroids();
-    void initializeAsteroids(int init_asteroids);
-    GLuint loadTexture(const QString &path);
-    ParticleEmitter *m_emitter;
 
 protected:
     vector<Asteroid*> m_asteroids;
@@ -74,17 +70,22 @@ private:
     int m_prevTime;
     float m_prevFps, m_fps, m_increment;
     OrbitCamera m_camera;
+    Vector2 m_delta;
+    Vector3 rotateVector;
 
-    void renderExplosion();
     // Resources
     QHash<QString, QGLShaderProgram *> m_shaderPrograms; // hash map of all shader programs
     QHash<QString, QGLFramebufferObject *> m_framebufferObjects; // hash map of all framebuffer objects
     GLuint m_skybox; // skybox call list ID
     GLuint m_cubeMap; // cubeMap texture ID
-    GLuint m_texture;
-    GLuint m_smokeTex;
+    GLuint m_texture; //texture of asteroid
     QFont m_font; // font for rendering text
     QGLShaderProgram *newShaderProgram(const QGLContext *context, QString vertShader, QString fragShader);
+    void deleteAsteroids();
+    void initializeAsteroids(int init_asteroids);
+    GLuint loadTexture(const QString &path);
+    ParticleEmitter *m_emitter;
+
 private slots:
     void tick();
 };
