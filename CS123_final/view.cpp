@@ -60,7 +60,6 @@ View::View(QWidget *parent) : QGLWidget(parent)
     m_camera.fovy = 60.f;
 
     initializeAsteroids(40);
-    changeDirection = false;
     m_texture = 0;
 
    // asteroid = new Asteroid();
@@ -119,8 +118,6 @@ void View::initializeAsteroids(int init_asteroids){
             float collision_rad = rad + m_asteroids[j]->getRadius();
             float distance = sqrt(pow(pos2.x - pos1.x, 2) + pow(pos2.y - pos1.y, 2) + pow(pos2.z - pos1.z, 2));
             if (distance <= collision_rad) {
-                cout << num_asteroids << endl;
-                cout << m_asteroids.size() << endl;
                 delete m_asteroids[i];
                 delete m_asteroids[j];
                 m_asteroids.erase(m_asteroids.begin() + j);
@@ -217,8 +214,8 @@ void View::initializeResources()
                                     Vector3(0.0f, 0.0001f, 0.0f), //force
                                     100.f, //scaole
                                     10.0f, //fuzziness
-                                    10.0f / 10000.0f, //speed
-                                    30); //max particles
+                                    8.f / 10000.0f, //speed
+                                    100); //max particles
 
     loadCubeMap();
     cout << "Loaded cube map..." << endl;
@@ -357,41 +354,12 @@ void View::resizeGL(int w, int h)
 
 void View::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::RightButton){
-        changeDirection = true;
-        m_dragMouse.x = event->x();
-        m_dragMouse.y = event->y();
-        setSelection(Vector2(event->x(), event->y()));
-    } else {
 
         m_prevMousePos.x = event->x();
         m_prevMousePos.y = event->y();
-    }
+
 }
 
-void View::setSelection(const Vector2 &mouse)
-{
-    SelectionRecorder recorder;
-
-    // See if the (x, y) mouse position hits any primitives.
-    recorder.enterSelectionMode(mouse.x, mouse.y, m_asteroids.size());
-    for (int i = 0; i < m_asteroids.size(); i++){
-        recorder.setObjectIndex(i);
-        m_asteroids[i]->draw(m_fps, m_increment);
-    }
-
-    // Set or clear the selection, and set m_hit to be the intersection point.
-    int index;
-    if(recorder.exitSelectionMode(index, m_hit.x, m_hit.y, m_hit.z)){
-        m_selection = m_asteroids[index];
-      //  cout << index << endl;
-    } else {
-       // cout << "NULL" <<endl;
-       // cout << index << endl;
-        m_selection = NULL;
-    }
-    m_hit.w = 1;
-}
 
 
 void View::mouseMoveEvent(QMouseEvent *event)
@@ -407,57 +375,21 @@ void View::mouseMoveEvent(QMouseEvent *event)
    // int deltaY = event->y() - height() / 2;
    // if (!deltaX && !deltaY) return;
    // QCursor::setPos(mapToGlobal(QPoint(width() / 2, height() / 2)));
-    if (!changeDirection){
+
         Vector2 pos(event->x(), event->y());
         if (event->buttons() & Qt::LeftButton || event->buttons() & Qt::RightButton)
         {
             m_camera.mouseMove(pos - m_prevMousePos);
         }
         m_prevMousePos = pos;
-    }
+
     // TODO: Handle mouse movements here
 }
 
 void View::mouseReleaseEvent(QMouseEvent *event)
 {
-    if (changeDirection && m_selection != NULL){
-        Vector4 R = getMouseRay(Vector2(event->x(), event->y()), m_camera);
 
-        Vector3 dir;
-        Vector3 x;
-        dir = -x.fromAngles(m_camera.theta, m_camera.phi);
-        Vector3 eye3(m_camera.center - dir * m_camera.zoom);
 
-        Vector4  eye = Vector4(eye3.x, eye3.y, eye3.z, 1.);
-
-        Vector4 L = /*m_camera.getLook();*/Vector4(dir.x, dir.y, dir.z, 0.);
-        Vector4 i_new =/* m_camera.getEye() */eye+ ((m_hit- /*m_camera.getEye()*/eye).dot(L)/R.dot(L)) * R;
-        Vector4 newTranslation = (i_new - m_hit).getNormalized();
-        newTranslation = newTranslation/500;
-
-            cout << m_selection->m_translation.x << endl;
-
-        m_hit = i_new;
-    }
-    changeDirection = false;
-}
-
-Vector4 View::getMouseRay(const Vector2 &mouse, const OrbitCamera &camera)
-{
-    int viewport[4];
-    double worldX, worldY, worldZ, modelviewMatrix[16], projectionMatrix[16];
-    glGetIntegerv(GL_VIEWPORT, viewport);
-    glGetDoublev(GL_MODELVIEW_MATRIX, modelviewMatrix);
-    glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix);
-    gluUnProject(mouse.x, viewport[3] - mouse.y - 1, 1,
-                 modelviewMatrix, projectionMatrix, viewport,
-                 &worldX, &worldY, &worldZ);
-    Vector3 dir;
-    Vector3 x;
-    dir = -x.fromAngles(m_camera.theta, m_camera.phi);
-    Vector3 eye3 = Vector3(m_camera.center - dir * m_camera.zoom);
-    Vector4 eye = Vector4(eye3.x, eye3.y, eye3.z, 0);
-    return (Vector4(worldX, worldY, worldZ, 1) - eye.getNormalized());
 }
 
 void View::keyPressEvent(QKeyEvent *event)

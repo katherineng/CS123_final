@@ -50,8 +50,7 @@ public:
 
 protected:
     vector<Asteroid*> m_asteroids;
-    Vector4 m_hit;
-    Vector2 m_oldMouse;
+    Vector2 m_prevMousePos;
 
 private:
     QTime m_time;
@@ -68,11 +67,6 @@ private:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
-    Vector2 m_prevMousePos;
-    Vector2 m_dragMouse;
-    Vector4 getMouseRay(const Vector2 &mouse, const OrbitCamera &camera);
-    void setSelection(const Vector2 &mouse);
-    bool changeDirection;
 
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);

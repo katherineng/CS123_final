@@ -152,8 +152,10 @@ public:
     vector<int> m_time;
     vector<int> m_numParticles;
     GLuint m_smokeTex;
+    int maxTime;
     void deleteParticles(int index);
     void renderTexturedQuad(int width, int height);
+    Vector3 lerp(Vector3 begin, Vector3 end, float percent);
 
 };
 
