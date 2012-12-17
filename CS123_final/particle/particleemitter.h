@@ -156,7 +156,7 @@ public:
 
     /** texture stuff */
     GLuint m_smokeTex;
-    void renderTexturedQuad(int width, int height);
+    void renderTexturedQuad(double width, double height);
 
     void deleteParticles(int index);
     int maxTime;

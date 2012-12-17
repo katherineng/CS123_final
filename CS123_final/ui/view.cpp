@@ -199,7 +199,7 @@ void View::initializeResources()
                                     Vector3(0.0f, 0.0001f, 0.0f), //force
                                     100.f, //scaole
                                     10.0f, //fuzziness
-                                    8.f / 10000.0f, //speed
+                                    4.f / 10000.0f, //speed
                                     100); //max particles
 
     cout << "Loaded particle engine..." << endl;
@@ -388,6 +388,15 @@ void View::keyPressEvent(QKeyEvent *event)
     case Qt::Key_R:
         deleteAsteroids();
         initializeAsteroids(40);
+       /* delete m_emitter;
+        m_emitter = new ParticleEmitter(loadTexture("/textures/particle2.bmp"),
+                                            Vector3(1.0f, 0.5f, 0.2f), //color
+                                            Vector3(0.0f, 0.0001f, 0.0f), //velocity
+                                            Vector3(0.0f, 0.0001f, 0.0f), //force
+                                            100.f, //scaole
+                                            10.0f, //fuzziness
+                                            4.f / 10000.0f, //speed
+                                            100); //max particles*/
         break;
     case Qt::Key_D:
         m_displacementEnabled = !m_displacementEnabled;
@@ -440,7 +449,6 @@ void View::createShaderPrograms()
 {
     const QGLContext *ctx = context();
     m_shaderPrograms["displacement"] = newShaderProgram(ctx, "shaders/displacement.vert", "shaders/displacement.frag");
-    m_shaderPrograms["particles"] = newShaderProgram(ctx, "shaders/particles.vert", "shaders/particles.frag");
 }
 
 
@@ -593,7 +601,7 @@ void View::renderAsteroids(){
 
     foreach (Asteroid * a, m_asteroids) {
        m_shaderPrograms["displacement"]->setUniformValueArray("p", a->m_displacement, 512);
-        a->draw(m_fps, m_increment);
+        a->draw(m_increment);
     }
 
     m_shaderPrograms["displacement"]->release();

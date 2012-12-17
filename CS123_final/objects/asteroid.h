@@ -14,17 +14,14 @@ public:
     GLUquadric *m_quadric;
     Vector4 m_translation;
     Vector4 m_position;
-    Matrix4x4 m_scale;
 
     double m_radius;
-    double m_seed;
     GLint *m_displacement;
 
-    void draw(float fps, float elapsed);
+    void draw(float elapsed);
     Vector4 getPosition();
     void setRadius(float r);
     double getRadius();
-    GLuint m_texture;
 
 };
 

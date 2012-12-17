@@ -33,14 +33,13 @@ ParticleEmitter::ParticleEmitter(GLuint textureId, Vector3 color, Vector3 veloci
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
-    maxTime = 2000;
+    maxTime = 500;
 }
 
 ParticleEmitter::~ParticleEmitter()
 {
     foreach(Particle *particleList, m_particles)
         delete[] particleList;
-
     glDeleteTextures(1, &m_textureID);
 }
 
@@ -57,7 +56,7 @@ void ParticleEmitter::resetParticle(int i, Particle *particles)
     particles[i].pos.z = 0;
     //Continue filling out code here
     particles[i].life = 1.0;
-    particles[i].decay = urand(.0025, .15);
+    particles[i].decay = urand(.003, .008);
     particles[i].color = m_color;
     particles[i].force.x = urand(-m_fuzziness*.01, m_fuzziness *.01 + m_force.x);
     particles[i].force.y = urand(-m_fuzziness*.01, m_fuzziness *.01 + m_force.y);
@@ -113,8 +112,8 @@ void ParticleEmitter::updateParticles()
                 particles[i].pos.y += fmod(particles[i].dir.y * m_speed, .2);
                 particles[i].pos.z += fmod(particles[i].dir.z * m_speed, .2);
                 particles[i].dir += particles[i].force;
-                particles[i].color = lerp(Vector3(1,1,1), Vector3(1, 0.5, 0), time/100.);
                 float distance = sqrt(pow(particles[i].pos.x, 2) + pow(particles[i].pos.y, 2) + pow(particles[i].pos.z, 2));
+                particles[i].color = lerp(Vector3(1, 0.5, 0), Vector3(1,1,1), distance/1.5);
                 particles[i].life  =particles[i].life - particles[i].decay;
                // if (distance > 2.0)
                  //   particles[i].active = false;
@@ -123,7 +122,7 @@ void ParticleEmitter::updateParticles()
                 }*/
             } /*else {
                 particles[i].active = true;
-                resetParticle(i, particles);
+                ndersetParticle(i, particles);
             }*/
         }
     }
@@ -132,7 +131,7 @@ void ParticleEmitter::updateParticles()
 /**
   used to render texture
  */
-void ParticleEmitter::renderTexturedQuad(int width, int height) {
+void ParticleEmitter::renderTexturedQuad(double width, double height) {
     // Clamp value to edge of texture when texture index is out of bounds
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -191,7 +190,7 @@ void ParticleEmitter::drawParticles(double theta)
                     glRotatef(fmod((270 - theta), 360), 0.,1.,0.);
                     glColor4f(particles[i].color.x,particles[i].color.y, particles[i].color.z, particles[i].life);
                     glTranslatef(translate.x + particles[i].pos.x, translate.y + particles[i].pos.y, translate.z + particles[i].pos.z);
-                    renderTexturedQuad(1, 1);
+                    renderTexturedQuad(max(1.,time/200.), max(1.,time/200.));
                     glPopAttrib();
                     glPopMatrix();
                 }
