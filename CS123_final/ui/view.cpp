@@ -336,6 +336,9 @@ void View::paintGL()
 void View::resizeGL(int w, int h)
 {
     glViewport(0, 0, w, h);
+    foreach (QGLFramebufferObject *fbo, m_framebufferObjects)
+        delete fbo;
+    createFramebufferObjects(w, h);
 }
 
 void View::mousePressEvent(QMouseEvent *event)
@@ -389,7 +392,7 @@ void View::keyPressEvent(QKeyEvent *event)
     case Qt::Key_R:
         deleteAsteroids();
         initializeAsteroids(40);
-       /* delete m_emitter;
+       delete m_emitter;
         m_emitter = new ParticleEmitter(loadTexture("/textures/particle2.bmp"),
                                             Vector3(1.0f, 0.5f, 0.2f), //color
                                             Vector3(0.0f, 0.0001f, 0.0f), //velocity
@@ -397,7 +400,7 @@ void View::keyPressEvent(QKeyEvent *event)
                                             100.f, //scaole
                                             10.0f, //fuzziness
                                             4.f / 10000.0f, //speed
-                                            100); //max particles*/
+                                            100); //max particles
         break;
     case Qt::Key_D:
         m_displacementEnabled = !m_displacementEnabled;
