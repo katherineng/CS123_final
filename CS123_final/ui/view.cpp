@@ -59,16 +59,16 @@ View::~View()
     glDeleteTextures(1, &m_texture);
 }
 
-/*
- loads a texture given the path and returns the id of the texture
- */
+/**
+ * loads a texture given the path and returns the id of the texture
+ **/
 GLuint View::loadTexture(const QString &path){
         QFile file(path);
         QImage image, texture;
         if(!file.exists()) return -1;
         image.load(file.fileName());
         texture = QGLWidget::convertToGLFormat(image);
-        //Put your code here
+
         GLuint id = 0;
         glGenTextures(1, &id);
         glBindTexture(GL_TEXTURE_2D, GL_TEXTURE0);
@@ -78,16 +78,20 @@ GLuint View::loadTexture(const QString &path){
         return id;
 }
 
-/*
- frees asteroid list
- */
+/**
+ * frees asteroid list
+ **/
 void View::deleteAsteroids(){
+    foreach(Asteroid *a, m_asteroids) {
+        delete a;
+    }
+
     m_asteroids.clear();
 }
 
-/*
- initializes asteroid lists, gets rid of any initial overlap
- */
+/**
+ * initializes asteroid lists, gets rid of any initial overlap
+ **/
 void View::initializeAsteroids(int init_asteroids){
     for (int i = 0; i < init_asteroids; i++)
         m_asteroids.push_back(new Asteroid());
@@ -137,26 +141,34 @@ void View::initializeGL()
 }
 
 /**
- detects collision between asteroids and maybe renders and explosion
- */
+ * Detects collision between asteroids and maybe renders an explosion
+ **/
 void View::collisionDetection(bool explosions){
     int j, i, num_asteroids = m_asteroids.size();
     float rad, collision_rad, distance;
+
+    // check each asteroid in the asteroid list against every other asteroid in the scene
     for (i = 0; i < num_asteroids; i++) {
         Vector4 pos1 = m_asteroids[i]->getPosition();
         rad = m_asteroids[i]->getRadius();
+
         for (j = i + 1; j < num_asteroids; j++){
             Vector4 pos2 = m_asteroids[j]->getPosition();
             collision_rad = rad + m_asteroids[j]->getRadius();
             distance = sqrt(pow(pos2.x - pos1.x, 2) + pow(pos2.y - pos1.y, 2) + pow(pos2.z - pos1.z, 2));
+
+            // if distance between the two asteroids' midpoints is less than their combined radii, explode
             if (distance <= collision_rad) {
                 if (explosions)
                     m_emitter->addExplosion(m_asteroids[i]->getPosition());
+
+                // delete asteroids and remove them from asteroid list
                 delete m_asteroids[i];
                 delete m_asteroids[j];
                 m_asteroids.erase(m_asteroids.begin() + j);
                 m_asteroids.erase(m_asteroids.begin() + i);
                 num_asteroids -= 2;
+
                 i--;
                 break;
             }
@@ -166,9 +178,9 @@ void View::collisionDetection(bool explosions){
 
 
 /**
-  Initialize all resources.
-  This includes models, textures, call lists, shader programs, and framebuffer objects.
- **/
+ * Initialize all resources.
+ * This includes models, textures, call lists, shader programs, and framebuffer objects.
+ */
 void View::initializeResources()
 {
     cout << "Using OpenGL Version " << glGetString(GL_VERSION) << endl << endl;
@@ -195,13 +207,13 @@ void View::initializeResources()
     cout << "Loaded asteroid texture..." << endl;
 
     m_emitter = new ParticleEmitter(loadTexture("/textures/particle2.bmp"),
-                                    Vector3(1.0f, 0.5f, 0.2f), //color
-                                    Vector3(0.0f, 0.0001f, 0.0f), //velocity
-                                    Vector3(0.0f, 0.0001f, 0.0f), //force
-                                    100.f, //scaole
-                                    10.0f, //fuzziness
-                                    4.f / 10000.0f, //speed
-                                    100); //max particles
+                                    Vector3(1.0f, 0.5f, 0.2f), // color
+                                    Vector3(0.0f, 0.0001f, 0.0f), // velocity
+                                    Vector3(0.0f, 0.0001f, 0.0f), // force
+                                    100.f, // scale
+                                    10.0f, // fuzziness
+                                    4.f / 10000.0f, // speed
+                                    100); // max particles
 
     cout << "Loaded particle engine..." << endl;
 
@@ -219,12 +231,12 @@ void View::initializeResources()
 }
 
 /**
-  Loads the cube map into video memory.
-
-  @param files: a list of files containing the cube map images (should be length
-  six) in order
-  @return the assigned OpenGL id to the cube map
-**/
+ * Loads the cube map into video memory.
+ *
+ * @param files: a list of files containing the cube map images (should be length
+ * six) in order
+ * @return the assigned OpenGL id to the cube map
+ **/
 GLuint View::loadCubeMap(QList<QFile *> files)
 {
     Q_ASSERT(files.length() == 6);
@@ -261,14 +273,13 @@ GLuint View::loadCubeMap(QList<QFile *> files)
 
 
 /**
-    Creates a call list for a skybox
-  **/
+ * Creates a call list for skybox rendering
+ **/
 GLuint View::loadSkybox()
 {
     GLuint id = glGenLists(1);
     glNewList(id, GL_COMPILE);
 
-    // Be glad we wrote this for you...ugh.
     glBegin(GL_QUADS);
     float extent = 10000.f;
     glTexCoord3f( 1.0f, -1.0f, -1.0f); glVertex3f( extent, -extent, -extent);
@@ -333,6 +344,9 @@ void View::paintGL()
     paintText();
 }
 
+/**
+ * Resize the viewport
+ **/
 void View::resizeGL(int w, int h)
 {
     glViewport(0, 0, w, h);
@@ -341,26 +355,26 @@ void View::resizeGL(int w, int h)
     createFramebufferObjects(w, h);
 }
 
+/**
+ * Stores position of mouse clicks
+ **/
 void View::mousePressEvent(QMouseEvent *event)
 {
         m_prevMousePos.x = event->x();
         m_prevMousePos.y = event->y();
 }
 
-
+/**
+ * Implements mouse capture, gives the change in the mouse position since the last
+ * mouse movement
+ **/
 void View::mouseMoveEvent(QMouseEvent *event)
 {
-    // This starter code implements mouse capture, which gives the change in
-    // mouse position since the last mouse movement. The mouse needs to be
-    // recentered after every movement because it might otherwise run into
+    // The mouse is recentered after every movement because it might otherwise run into
     // the edge of the screen, which would stop the user from moving further
     // in that direction. Note that it is important to check that deltaX and
     // deltaY are not zero before recentering the mouse, otherwise there will
     // be an infinite loop of mouse move events.
-    //  int deltaX = event->x() - width() / 2;
-    // int deltaY = event->y() - height() / 2;
-    // if (!deltaX && !deltaY) return;
-    // QCursor::setPos(mapToGlobal(QPoint(width() / 2, height() / 2)));
 
     Vector2 pos(event->x(), event->y());
     if (event->buttons() & Qt::LeftButton || event->buttons() & Qt::RightButton)
@@ -371,8 +385,8 @@ void View::mouseMoveEvent(QMouseEvent *event)
 }
 
 /**
-  Sets keystrokes for user options
-  **/
+ * Sets keystrokes for user options
+ */
 void View::keyPressEvent(QKeyEvent *event)
 {
    // if (event->key() == Qt::Key_Escape) QApplication::quit();
@@ -386,13 +400,13 @@ void View::keyPressEvent(QKeyEvent *event)
         qi.save(QFileInfo(fileName).absoluteDir().absolutePath() + "/" + QFileInfo(fileName).baseName() + ".png", "PNG", 100);
         break;
     }
-    case Qt::Key_A:
+    case Qt::Key_A: // add an asteroid to the scene
         m_asteroids.push_back(new Asteroid());
         break;
-    case Qt::Key_R:
+    case Qt::Key_R: // reset the scene
         deleteAsteroids();
         initializeAsteroids(40);
-       delete m_emitter;
+        delete m_emitter;
         m_emitter = new ParticleEmitter(loadTexture("/textures/particle2.bmp"),
                                             Vector3(1.0f, 0.5f, 0.2f), //color
                                             Vector3(0.0f, 0.0001f, 0.0f), //velocity
@@ -402,10 +416,10 @@ void View::keyPressEvent(QKeyEvent *event)
                                             4.f / 10000.0f, //speed
                                             100); //max particles
         break;
-    case Qt::Key_D:
+    case Qt::Key_D: // toggle perlin noise vertex displacement
         m_displacementEnabled = !m_displacementEnabled;
         break;
-    case Qt::Key_C:
+    case Qt::Key_C: // toggle collision detection
         m_collisionEnabled = !m_collisionEnabled;
         break;
     }
@@ -420,10 +434,11 @@ void View::tick()
 
 
 /**
-  Load a cube map for the skybox
+ * Load a cube map for the skybox
  **/
 void View::loadCubeMap()
 {
+    // append file for each side of the box
     QList<QFile *> fileList;
     fileList.append(new QFile("textures/posx.jpg"));
     fileList.append(new QFile("textures/negx.jpg"));
@@ -435,8 +450,8 @@ void View::loadCubeMap()
 }
 
 /**
-    Creates a shader program from both vert and frag shaders
-  **/
+ * Creates a shader program from both vert and frag shaders
+ **/
 QGLShaderProgram *View::newShaderProgram(const QGLContext *context, QString vertShader, QString fragShader)
 {
     QGLShaderProgram *program = new QGLShaderProgram(context);
@@ -447,7 +462,7 @@ QGLShaderProgram *View::newShaderProgram(const QGLContext *context, QString vert
 }
 
 /**
-  Create shader programs.
+ * Create shader programs.
  **/
 void View::createShaderPrograms()
 {
@@ -457,10 +472,10 @@ void View::createShaderPrograms()
 
 
 /**
-  Allocate framebuffer objects.
-
-  @param width: the viewport width
-  @param height: the viewport height
+ * Allocate framebuffer objects.
+ *
+ * @param width: the viewport width
+ * @param height: the viewport height
  **/
 void View::createFramebufferObjects(int width, int height)
 {
@@ -480,11 +495,11 @@ void View::createFramebufferObjects(int width, int height)
 
 
 /**
-  Called to switch to an orthogonal OpenGL camera.
-  Useful for rending a textured quad across the whole screen.
-
-  @param width: the viewport width
-  @param height: the viewport height
+ * Called to switch to an orthogonal OpenGL camera.
+ * Useful for rending a textured quad across the whole screen.
+ *
+ * @param width: the viewport width
+ * @param height: the viewport height
 **/
 void View::applyOrthogonalCamera(float width, float height)
 {
@@ -497,11 +512,11 @@ void View::applyOrthogonalCamera(float width, float height)
 
 
 /**
-  Called to switch to a perspective OpenGL camera.
-
-  @param width: the viewport width
-  @param height: the viewport height
-**/
+ * Called to switch to a perspective OpenGL camera.
+ *
+ * @param width: the viewport width
+ * @param height: the viewport height
+ **/
 void View::applyPerspectiveCamera(float width, float height)
 {
     float ratio = ((float) width) / height;
@@ -521,9 +536,9 @@ void View::applyPerspectiveCamera(float width, float height)
 }
 
 /**
-  Renders the scene.  May be called multiple times by paintGL() if necessary.
-  used for skybox
-**/
+ * Renders the scene. May be called multiple times by paintGL() if necessary.
+ * used for skybox
+ **/
 void View::renderTexturedQuad(int width, int height) {
     // Clamp value to edge of texture when texture index is out of bounds
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -543,8 +558,8 @@ void View::renderTexturedQuad(int width, int height) {
 }
 
 /**
-  Renders the scene.  May be called multiple times by paintGL() if necessary.
-**/
+ * Renders the scene.  May be called multiple times by paintGL() if necessary.
+ **/
 void View::renderScene()
 {
     if (m_collisionEnabled)
@@ -571,8 +586,8 @@ void View::renderScene()
 }
 
 /**
-  Renders the skybox
-**/
+ * Renders the skybox
+  **/
 void View::renderSkybox(){
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMap);
@@ -586,14 +601,17 @@ void View::renderSkybox(){
 }
 
 /**
-  Renders the asteroids.
-**/
+ * Renders the asteroids.
+ **/
 void View::renderAsteroids(){
     glEnable(GL_TEXTURE_2D);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_texture);
+
+    // bind the shader
     m_shaderPrograms["displacement"]->bind();
+    // apply the asteroid texture
     m_shaderPrograms["displacement"]->setUniformValue("textureMap",GL_TEXTURE0);
     if (m_displacementEnabled)
         m_shaderPrograms["displacement"]->setUniformValue("displacementEnabled", 1);
@@ -603,7 +621,9 @@ void View::renderAsteroids(){
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
+    // draw each asteroid in m_asteroids
     foreach (Asteroid * a, m_asteroids) {
+       // pass the asteroid's random displacement seed array to the shader
        m_shaderPrograms["displacement"]->setUniformValueArray("p", a->m_displacement, 512);
         a->draw(m_increment);
     }
@@ -614,8 +634,8 @@ void View::renderAsteroids(){
 
 
 /**
-  Called when the mouse wheel is turned.  Zooms the camera in and out.
-**/
+ *  Called when the mouse wheel is turned.  Zooms the camera in and out.
+ **/
 void View::wheelEvent(QWheelEvent *event)
 {
     if (event->orientation() == Qt::Vertical)
@@ -624,7 +644,7 @@ void View::wheelEvent(QWheelEvent *event)
 
 
 /**
-  Draws text for the FPS and screenshot prompt
+ * Draws text for the FPS and screenshot prompt
  **/
 void View::paintText()
 {

@@ -77,15 +77,11 @@ public:
 
     GLUquadric *m_quadric;
     /**
-      * You need to fill this in.
-      *
       * Draws each particle as a small, texture-mapped square of side-length m_scale.
       * Each square should be in the X/Y plane at Z = the particle's position's Z-coordinate.
       */
     void drawParticles(double theta);
     /**
-      * You need to fill this in.
-      *
       * Resets the particle at the given index to its initial state. Should reset the
       * position, direction, force, color, life, and decay of the particle.
       */
@@ -95,8 +91,6 @@ public:
       */
     void resetParticles(Particle *particles);
     /**
-      * You need to fill this in.
-      *
       * Performs one step of the particle simulation. Should perform all physics
       * calculations and maintain the life property of each particle.
       */

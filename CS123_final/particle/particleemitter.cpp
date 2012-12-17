@@ -26,7 +26,8 @@ ParticleEmitter::ParticleEmitter(GLuint textureId, Vector3 color, Vector3 veloci
     QImage image2, texture2;
     image2.load(file2.fileName());
     texture2 = QGLWidget::convertToGLFormat(image2);
-    //Put your code here
+
+    // bind smoke texture to the particles
     glGenTextures(1, &m_smokeTex);
     glBindTexture(GL_TEXTURE_2D, m_smokeTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture2.width(), texture2.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture2.bits());
@@ -44,8 +45,6 @@ ParticleEmitter::~ParticleEmitter()
 }
 
 /**
-  * You need to fill this in.
-  *
   * Resets the particle at the given index to its initial state. Should reset the
   * position, direction, force, color, life, and decay of the particle.
   */
@@ -54,7 +53,7 @@ void ParticleEmitter::resetParticle(int i, Particle *particles)
     particles[i].pos.x = 0;
     particles[i].pos.y = 0;
     particles[i].pos.z = 0;
-    //Continue filling out code here
+
     particles[i].life = 1.0;
     particles[i].decay = urand(.003, .008);
     particles[i].color = m_color;
@@ -79,20 +78,18 @@ void ParticleEmitter::resetParticles(Particle *particles)
 }
 
 /**
-  returns color between begin and end
+ * Returns color between begin and end based on the given percent
  */
 Vector3 ParticleEmitter::lerp(Vector3 begin, Vector3 end, float percent){
 
     float red = begin.x - (percent * (begin.x - end.x));
-    float green = begin.y - (percent * (begin.y-end.y));
+    float green = begin.y - (percent * (begin.y - end.y));
     float blue = begin.z -  (percent * (begin.z - end.z));
 
     return Vector3(red, green, blue);
 }
 
 /**
-  * You need to fill this in.
-  *
   * Performs one step of the particle simulation. Should perform all physics
   * calculations and maintain the life property of each particle.
   */
@@ -112,24 +109,19 @@ void ParticleEmitter::updateParticles()
                 particles[i].pos.y += fmod(particles[i].dir.y * m_speed, .2);
                 particles[i].pos.z += fmod(particles[i].dir.z * m_speed, .2);
                 particles[i].dir += particles[i].force;
+
+                // randomize color of the particle texture based on distance from starting position
                 float distance = sqrt(pow(particles[i].pos.x, 2) + pow(particles[i].pos.y, 2) + pow(particles[i].pos.z, 2));
                 particles[i].color = lerp(Vector3(1, 0.5, 0), Vector3(1,1,1), distance/1.5);
-                particles[i].life  =particles[i].life - particles[i].decay;
-               // if (distance > 2.0)
-                 //   particles[i].active = false;
-              /*  if (particles[i].life < 0){
-                    particles[i].active = false;
-                }*/
-            } /*else {
-                particles[i].active = true;
-                ndersetParticle(i, particles);
-            }*/
+                // decrease particle life based on decay rate
+                particles[i].life  = particles[i].life - particles[i].decay;
+            }
         }
     }
 }
 
 /**
-  used to render texture
+  Renders the particle quad
  */
 void ParticleEmitter::renderTexturedQuad(double width, double height) {
     // Clamp value to edge of texture when texture index is out of bounds
@@ -150,13 +142,10 @@ void ParticleEmitter::renderTexturedQuad(double width, double height) {
     glTexCoord2f(1.0f, 0.0f);
     glVertex2f(width, 0.0f);
 
-
     glEnd();
 }
 
 /**
-  * You need to fill this in.
-  *
   * Draws each particle as a small, texture-mapped square of side-length m_scale.
   * Each square should be in the X/Y plane at Z = the particle's position's Z-coordinate.
   */
@@ -167,6 +156,7 @@ void ParticleEmitter::drawParticles(double theta)
     int size = explosionLocations.size();
     int partNum;
     int time;
+
     for (int j = 0; j < size; j++){
         time = m_time[j];
         if (time > maxTime){
@@ -185,12 +175,14 @@ void ParticleEmitter::drawParticles(double theta)
 
                 if(particles[i].active && particles[i].life!=0){
                     glPushMatrix();
-
                     glPushAttrib(GL_CURRENT_BIT);
+
+                    // dynamic billboarding so that particles always face camera when it rotates
                     glRotatef(fmod((270 - theta), 360), 0.,1.,0.);
                     glColor4f(particles[i].color.x,particles[i].color.y, particles[i].color.z, particles[i].life);
                     glTranslatef(translate.x + particles[i].pos.x, translate.y + particles[i].pos.y, translate.z + particles[i].pos.z);
                     renderTexturedQuad(max(1.,time/200.), max(1.,time/200.));
+
                     glPopAttrib();
                     glPopMatrix();
                 }
@@ -207,8 +199,8 @@ void ParticleEmitter::drawParticles(double theta)
 
 }
 
-/*
- deletes a particle
+/**
+ * Deletes a particle
  */
 void ParticleEmitter::deleteParticles(int index){
     m_time.erase(m_time.begin() + index);
@@ -218,8 +210,8 @@ void ParticleEmitter::deleteParticles(int index){
 }
 
 /**
-  adds stuff when you want another explosion
-  */
+ * In the event of an asteroid collision, adds another explosion
+ */
 void ParticleEmitter::addExplosion(Vector4 location){
     explosionLocations.push_back(location);
     Particle *particleList= new Particle[m_maxParticles];

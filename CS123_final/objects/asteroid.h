@@ -18,9 +18,17 @@ public:
     double m_radius;
     GLint *m_displacement;
 
+
+    /*! given the time elapsed, renders asteroid to the scene */
     void draw(float elapsed);
+
+    /*! getter for m_position */
     Vector4 getPosition();
+
+    /*! setter for m_radius */
     void setRadius(float r);
+
+    /*! getter for m_radius */
     double getRadius();
 
 };
