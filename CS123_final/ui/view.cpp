@@ -141,13 +141,14 @@ void View::initializeGL()
  */
 void View::collisionDetection(bool explosions){
     int j, i, num_asteroids = m_asteroids.size();
+    float rad, collision_rad, distance;
     for (i = 0; i < num_asteroids; i++) {
         Vector4 pos1 = m_asteroids[i]->getPosition();
-        float rad = m_asteroids[i]->getRadius();
+        rad = m_asteroids[i]->getRadius();
         for (j = i + 1; j < num_asteroids; j++){
             Vector4 pos2 = m_asteroids[j]->getPosition();
-            float collision_rad = rad + m_asteroids[j]->getRadius();
-            float distance = sqrt(pow(pos2.x - pos1.x, 2) + pow(pos2.y - pos1.y, 2) + pow(pos2.z - pos1.z, 2));
+            collision_rad = rad + m_asteroids[j]->getRadius();
+            distance = sqrt(pow(pos2.x - pos1.x, 2) + pow(pos2.y - pos1.y, 2) + pow(pos2.z - pos1.z, 2));
             if (distance <= collision_rad) {
                 if (explosions)
                     m_emitter->addExplosion(m_asteroids[i]->getPosition());
